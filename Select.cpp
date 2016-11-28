@@ -39,12 +39,33 @@ void select(FILE *ponteiroArquivo){
  * */
 void identificarComando(string comando){
 	
-	assert(comando.empty() && "Comando inválido.\n");
+	if(comando.empty()){
+		return;
+	}
 
-	stringstream fluxo(comando);
-	istream_iterator<string> comeco(fluxo);
+	//Lista de cláusulas
+	stringstream fluxoComando(comando);
+	istream_iterator<string> comeco(fluxoComando);
 	istream_iterator<string> fim;
-	vector<string> tokens(comeco, fim);
+	vector<string> clausulas(comeco, fim);
+
+	// Lista de atributos
+	stringstream fluxoAtributos(clausulas[1]);
+	istream_iterator<string> comecoAtr(fluxoAtributos);
+	istream_iterator<string> fimAtr;
+	vector<string> atributos(comecoAtr, fimAtr);
+
+	//Junção
+	if(clausulas[4] == "JOIN"){
+		string relacaoA, relacaoB;
+		string condicao;
+		
+		relacaoA = clausulas[3];
+		relacaoB = clausulas[5];
+		condicao = clausulas[7];
+	} else {
+		string relacao = clausulas[3];
+	}
 
 	/** codificação: 
 	 *	1º: Comando SELECT
@@ -53,6 +74,7 @@ void identificarComando(string comando){
 	 *  próx(autômato) : relação OU junção de relações, (rel1 JOIN rel2 ON cond)
 	 *  Cláusula WHERE (opcional)
 	 */
+
 }
 
 

@@ -54,14 +54,15 @@ main	../BDI/main.c	/^int main(int argc, char* argv[])$/;"	f
 nameAtribute	../BDI/createTable.c	/^    char nameAtribute[501];$/;"	m	struct:__anon2	file:
 notNull	../BDI/createTable.c	/^    bool notNull;$/;"	m	struct:__anon2	file:
 ord	../BDI/createTable.c	/^    bool ord;$/;"	m	struct:__anon2	file:
+parse	../BDI/Select.cpp	/^void parse(){$/;"	f
 parseAtr	../BDI/Select.cpp	/^string parseAtr(string where){$/;"	f
 parseOp	../BDI/Select.cpp	/^string parseOp(string where){$/;"	f
 parseVal	../BDI/Select.cpp	/^string parseVal(string where){$/;"	f
 prox	../BDI/createTable.c	/^    struct l *prox;$/;"	m	struct:l	typeref:struct:l::l	file:
 readAtributes	../BDI/createTable.c	/^LinkedList* readAtributes(FILE* sql)$/;"	f
 select	../BDI/Select.cpp	/^void select(FILE *ponteiroArquivo){$/;"	f
-split	../BDI/Select.cpp	/^std::vector<std::string> split(const std::string &s, char delim) {$/;"	f
-split	../BDI/Select.cpp	/^void split(const std::string &s, char delim, std::vector<std::string> &elems) {$/;"	f
+split	../BDI/Select.cpp	/^vector<string> split(const string &s, char delim) {$/;"	f
+split	../BDI/Select.cpp	/^void split(const string &s, char delim, vector<string> &elems) {$/;"	f
 t	../BDI/createTable.c	/^    tableCTL t;$/;"	m	struct:l	file:
 tableCTL	../BDI/createTable.c	/^} tableCTL;$/;"	t	typeref:struct:__anon2	file:
 type	../BDI/createTable.c	/^    Type type;$/;"	m	struct:__anon2	file:

@@ -12,7 +12,12 @@
 #include <boost/range/algorithm_ext/erase.hpp>
 #include <boost/algorithm/string.hpp>
 
+/**
+ *	Util
+ * */
+
 using namespace std;
+using namespace boost;
 
 void identificarComando(string &comando);
 
@@ -20,18 +25,18 @@ void identificarComando(string &comando);
  *	Seraração de Strings em vetores
  * 
  * */
-void split(const std::string &s, char delim, std::vector<std::string> &elems) {
-    std::stringstream ss;
+void split(const string &s, char delim, vector<string> &elems) {
+    stringstream ss;
     ss.str(s);
-    std::string item;
-    while (std::getline(ss, item, delim)) {
+    string item;
+    while (getline(ss, item, delim)) {
         elems.push_back(item);
     }
 }
 
 
-std::vector<std::string> split(const std::string &s, char delim) {
-    std::vector<std::string> elems;
+vector<string> split(const string &s, char delim) {
+    vector<string> elems;
     split(s, delim, elems);
     return elems;
 }
@@ -50,27 +55,11 @@ void limpar(string &s){
 	s.erase(novo_fim, s.end());   
 }
 
-// Função de interface com código em C
-// obtém comando do arquivo, e passa para o manipulador do select
-// PRE: arquivo está posicionado num SELECT
-void select(FILE *ponteiroArquivo){
-	assert(ponteiroArquivo != NULL && "Ponteiro de arquivo inválido");
-	
-	int rc = 0;
-	char *linha = NULL;
-	size_t tam = 0;
-	
-	rc = getdelim(&linha, &tam, ';', ponteiroArquivo);
-	assert(rc != -1 && "Arquivo corrompido: falha na leitura de um SELECT\n");
-
-	string comando(linha);
-	boost::erase_all(comando, "\n");
-	std::replace( comando.begin(), comando.end(), '\t', ' ');
-	
-	identificarComando(comando);
-	free(linha);
-}
-
+/**
+ *
+ *	Álgebra Relacional
+ *
+ * */
 
 string escreverProjecao(string relacao, int qtdAtributos, string listaAtributos, string nomeProjecao){
 	fstream arquivo;
@@ -101,6 +90,84 @@ string escreverJuncao(string relacao, string relacaoB, string condicao, string n
 	return nomeJuncao;
 }
 
+/**	
+ *	Parser Álgebra Relacional
+ *
+ *	TODO: relacionar com catalogo e dados
+ * */
+
+void executarProjecao(string linha){
+	size_t inicio = 2;
+	size_t fim = linha.length() - 2;
+
+	string sublinha = linha.substr(inicio, fim);
+
+	vector<string> dados = split(sublinha, ',');
+
+	string nomeTabela(dados[0]),
+		   qtdAtrs(dados[1]);
+	//:vector<string> atrs(stoi(qtdAtrs));
+}
+
+void executarSelecao(string linha){
+
+}
+
+void executarJuncao(string linha){
+	
+}
+
+void parse(){
+	fstream arquivo;
+	arquivo.open("Operacao.alg", fstream::in);
+
+	string linha;
+	
+	while(arquivo >> linha){
+		switch(linha[0]){
+			case 'P':
+				executarProjecao(linha);
+				break;
+			case 'S':
+				executarSelecao(linha);
+				break;
+			case 'J':
+				executarJuncao(linha);
+				break;
+			default:
+				break;
+		}
+	}
+
+
+	arquivo.close();
+}
+
+/**
+ *	SQL
+ * */
+
+// Função de interface com código em C
+// obtém comando do arquivo, e passa para o manipulador do select
+// PRE: arquivo está posicionado num SELECT
+void select(FILE *ponteiroArquivo){
+	assert(ponteiroArquivo != NULL && "Ponteiro de arquivo inválido");
+	
+	int rc = 0;
+	char *linha = NULL;
+	size_t tam = 0;
+	
+	rc = getdelim(&linha, &tam, ';', ponteiroArquivo);
+	assert(rc != -1 && "Arquivo corrompido: falha na leitura de um SELECT\n");
+
+	string comando(linha);
+	erase_all(comando, "\n");
+	replace( comando.begin(), comando.end(), '\t', ' ');
+	
+	identificarComando(comando);
+	free(linha);
+}
+
 string parseAtr(string where){
 	size_t found = where.find_first_of("=<>");	
 
@@ -121,6 +188,8 @@ string parseVal(string where){
 
 	return where.substr(found + 1, where.length());
 }
+
+
 
 /**
  *	Função de parsing do comando passado.
@@ -144,8 +213,6 @@ void identificarComando(string &comando){
 	string atributos;
 	string relacao, where, relacaoB, condicao, 
 		   selecao, projecao, juncao;
-
-	
 
 	for (int i = 0; i < clausulas.size(); i++){
 		switch(estado){
@@ -181,7 +248,7 @@ void identificarComando(string &comando){
 					estado++;
 				} else{
 					//fim: projeção na relacao, com os atributos
-					boost::erase_all(relacao, ";");
+					erase_all(relacao, ";");
 
 					escreverProjecao(relacao, count(atributos.begin(), atributos.end(), ',') + 1 , 
 							atributos, relacao + "_Proj(" + atributos + ")");
@@ -196,7 +263,7 @@ void identificarComando(string &comando){
 
 				//seleção -join +where
 				where = clausulas[i];
-				boost::erase_all(where, ";");
+				erase_all(where, ";");
 				
 				selecao = escreverSelecao(relacao, parseAtr(where), parseOp(where), 
 						parseVal(where), relacao + "_Sel(" + where + ")");
@@ -212,7 +279,7 @@ void identificarComando(string &comando){
 					break;
 				}
 				relacao = clausulas[i];
-				boost::erase_all(relacao, "(");
+				erase_all(relacao, "(");
 				
 				break;
 			case 6:
@@ -226,7 +293,7 @@ void identificarComando(string &comando){
 				break;
 			case 7:
 				condicao = clausulas[i];
-				boost::remove_erase_if(condicao, boost::is_any_of(");"));
+				remove_erase_if(condicao, is_any_of(");"));
 
 				if(clausulas.size() > 8){
 					estado++;
@@ -244,7 +311,7 @@ void identificarComando(string &comando){
 				if(clausulas[i] == "WHERE") continue;
 
 				where = clausulas[i];
-				boost::erase_all(where, ";");
+				erase_all(where, ";");
 
 				juncao = escreverJuncao(relacao, relacaoB, condicao,
 						relacao + "_Jun(" + condicao + ")_" + relacaoB);
@@ -262,6 +329,7 @@ void identificarComando(string &comando){
 
 }
 
+
 int main(int argc, char **argv){
 	FILE *arq = fopen(argv[1], "r");
 	select(arq);
@@ -269,5 +337,7 @@ int main(int argc, char **argv){
 	select(arq);
 	select(arq);
 	select(arq);
+
+	parse();
 	fclose(arq);
 }

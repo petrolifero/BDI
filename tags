@@ -42,6 +42,9 @@ _TEST	../BDI/ufftest.h	80;"	d
 before	../BDI/test_huffman.c	/^void before()$/;"	f
 compare_double	../BDI/ufftest.h	/^int compare_double(double a, double b) {$/;"	f
 createTable	../BDI/createTable.c	/^void createTable(FILE* sql)$/;"	f
+escreverJuncao	../BDI/Select.cpp	/^string escreverJuncao(string relacao, string relacaoB, string condicao, string nomeJuncao){$/;"	f
+escreverProjecao	../BDI/Select.cpp	/^string escreverProjecao(string relacao, int qtdAtributos, string listaAtributos, string nomeProjecao){$/;"	f
+escreverSelecao	../BDI/Select.cpp	/^string escreverSelecao(string relacao, string atr, string op, string valor, string nomeSelecao){$/;"	f
 identificarComando	../BDI/Select.cpp	/^void identificarComando(string &comando){$/;"	f
 key	../BDI/createTable.c	/^    bool key;$/;"	m	struct:__anon2	file:
 l	../BDI/createTable.c	/^typedef struct l$/;"	s	file:
@@ -51,6 +54,9 @@ main	../BDI/main.c	/^int main(int argc, char* argv[])$/;"	f
 nameAtribute	../BDI/createTable.c	/^    char nameAtribute[501];$/;"	m	struct:__anon2	file:
 notNull	../BDI/createTable.c	/^    bool notNull;$/;"	m	struct:__anon2	file:
 ord	../BDI/createTable.c	/^    bool ord;$/;"	m	struct:__anon2	file:
+parseAtr	../BDI/Select.cpp	/^string parseAtr(string where){$/;"	f
+parseOp	../BDI/Select.cpp	/^string parseOp(string where){$/;"	f
+parseVal	../BDI/Select.cpp	/^string parseVal(string where){$/;"	f
 prox	../BDI/createTable.c	/^    struct l *prox;$/;"	m	struct:l	typeref:struct:l::l	file:
 readAtributes	../BDI/createTable.c	/^LinkedList* readAtributes(FILE* sql)$/;"	f
 select	../BDI/Select.cpp	/^void select(FILE *ponteiroArquivo){$/;"	f

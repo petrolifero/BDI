@@ -12,6 +12,16 @@ int main(int argc, char* argv[])
   }
   fscanf(fp,"%c", &initial);
   rewind(fp);
+  while(1)
+  {
+    char c = fgetc(fp);
+    if(feof(fp))
+	break;
+    if(c=='\n')
+	c=' ';
+    fseek(fp,-1,SEEK_CUR);
+    fprintf(fp,"%c",c);
+  }
   switch(initial)
   {
     case 'S':

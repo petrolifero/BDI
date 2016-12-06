@@ -4,20 +4,21 @@
 #include <stdlib.h>
 #include <fstream>
 #include <string>
-#include <string.h>
 #include <vector>
 #include <iterator>
 #include <sstream>
 #include <iostream>
 #include <boost/range/algorithm_ext/erase.hpp>
 #include <boost/algorithm/string.hpp>
+#include <errno.h>
+#include <cassert>
 
 /**
  *	Util
  * */
 
-using namespace std;
 using namespace boost;
+using namespace std;
 
 void identificarComando(string &comando);
 
@@ -33,7 +34,6 @@ void split(const string &s, char delim, vector<string> &elems) {
         elems.push_back(item);
     }
 }
-
 
 vector<string> split(const string &s, char delim) {
     vector<string> elems;
@@ -96,25 +96,109 @@ string escreverJuncao(string relacao, string relacaoB, string condicao, string n
  *	TODO: relacionar com catalogo e dados
  * */
 
-void executarProjecao(string linha){
+vector<string> separarCampos(string linha){
 	size_t inicio = 2;
 	size_t fim = linha.length() - 2;
 
 	string sublinha = linha.substr(inicio, fim);
 
-	vector<string> dados = split(sublinha, ',');
+	return split(sublinha, ',');
+}
 
-	string nomeTabela(dados[0]),
-		   qtdAtrs(dados[1]);
-	//:vector<string> atrs(stoi(qtdAtrs));
+void executarProjecao(string linha){
+
+	vector<string> dados = separarCampos(linha);
+
+	string 	nomeTabela = dados[0],
+			nomeCatalogo = nomeTabela + ".ctl",
+			nomeDados = nomeTabela + ".dad";
+
+	const char *qtd_c = dados[1].c_str();
+
+	int tam = atoi(qtd_c);
+
+	vector<string> atrs;
+	
+	for(int i = 2; i < 2 + tam; i++){
+		atrs.push_back(dados[i]);
+	}
+
+	string nomeResultante(dados[2 + tam]);
+	
+	// TODO: escrever execução em arquivo e na tela
+	// 1. Criar arquivo de catálogo final
+	fstream saidaCtl;
+	saidaCtl.open(nomeResultante.c_str(), fstream::out);
+
+	// 1. Ler arquivo de catálogo
+	fstream catalogo;
+	catalogo.open(nomeCatalogo.c_str(), fstream::in);
+
+	int grau, cardinalidade,
+		grauProj = 0, cardProj = 0;
+	string lin,
+		   saidaCtlStr;
+
+	catalogo >> lin;
+	
+	// TODO: testar
+	assert(2 == scanf(lin.c_str(), "%d,%d\n", &grau, &cardinalidade) 
+			&& "Erro na leitura da cardinalidade e grau.\n");
+	
+	//Construção do CTL
+	string atributo;
+	vector<string> modificadores;
+
+	for(int i = 0; i < grau; i++){
+		catalogo >> atributo;
+		modificadores = split(atributo, ',');
+		if(find(atrs.begin(), atrs.end(), modificadores[0]) != atrs.end()){
+			grauProj++;
+			saidaCtlStr += atributo + "\n";
+		}
+	}
+
+	// Construção do DAD
+
+	/*
+	cout << "Grau:" << grau << "\n";
+	cout << "Cardinalidade:" << cardinalidade << "\n";
+	*/
+
+	// 2. Ler arquivo de dados
+	fstream arqDados;
+	arqDados.open(nomeDados.c_str(), fstream::in);
+	// 3. Executar projeção
+	// 4. Escrever em arquivo
+	// 5. Escrever na tela
+	catalogo.close();
+	arqDados.close();
+	saidaCtl.close();
 }
 
 void executarSelecao(string linha){
 
+	vector<string> dados = separarCampos(linha);
+
+	string nomeTabela(dados[0]),
+		   nomeAtr(dados[1]),
+		   operador(dados[2]),
+		   valor(dados[3]),
+		   nomeFinal(dados[4]);
+
+	// TODO: escrever execucao em arquivo e na tela
 }
 
 void executarJuncao(string linha){
-	
+
+	vector<string> dados = separarCampos(linha);
+
+	string nomeTabA(dados[0]),
+		   nomeTabB(dados[1]),
+		   cond(dados[2]),
+		   nomef(dados[3]);
+
+	// TODO: escrever execucao em arquivo e na tela
 }
 
 void parse(){
@@ -138,7 +222,6 @@ void parse(){
 				break;
 		}
 	}
-
 
 	arquivo.close();
 }
@@ -188,8 +271,6 @@ string parseVal(string where){
 
 	return where.substr(found + 1, where.length());
 }
-
-
 
 /**
  *	Função de parsing do comando passado.
@@ -251,7 +332,7 @@ void identificarComando(string &comando){
 					erase_all(relacao, ";");
 
 					escreverProjecao(relacao, count(atributos.begin(), atributos.end(), ',') + 1 , 
-							atributos, relacao + "_Proj(" + atributos + ")");
+							atributos, relacao + "_P_" + atributos);
 
 					estado = 99;
 				}
@@ -266,9 +347,9 @@ void identificarComando(string &comando){
 				erase_all(where, ";");
 				
 				selecao = escreverSelecao(relacao, parseAtr(where), parseOp(where), 
-						parseVal(where), relacao + "_Sel(" + where + ")");
+						parseVal(where), relacao + "_S_" + where);
 				escreverProjecao(selecao, count(atributos.begin(), atributos.end(), ',') + 1,
-						atributos, selecao + "_Proj(" + atributos + ")");
+						atributos, selecao + "_P_" + atributos);
 
 				estado = 99;
 				break;
@@ -301,9 +382,9 @@ void identificarComando(string &comando){
 				}
 
 				juncao = escreverJuncao(relacao, relacaoB, condicao, 
-						relacao + "_Jun(" + condicao + ")_" + relacaoB);
+						relacao + "_J_" + condicao + "_" + relacaoB);
 				escreverProjecao(juncao, count(atributos.begin(), atributos.end(), ',') + 1,
-						atributos, juncao + "_Proj(" + atributos + ")");
+						atributos, juncao + "_P_" + atributos);
 
 				estado = 99;
 				break;
@@ -314,11 +395,11 @@ void identificarComando(string &comando){
 				erase_all(where, ";");
 
 				juncao = escreverJuncao(relacao, relacaoB, condicao,
-						relacao + "_Jun(" + condicao + ")_" + relacaoB);
+						relacao + "_J_" + condicao + "_" + relacaoB);
 				selecao = escreverSelecao(juncao, parseAtr(where), parseOp(where), 
-						parseVal(where), juncao + "_Sel(" + where + ")");
+						parseVal(where), juncao + "_S_" + where);
 				escreverProjecao(selecao, count(atributos.begin(), atributos.end(), ',') + 1, 
-						atributos, selecao + "_Proj(" + atributos + ")");
+						atributos, selecao + "_P_" + atributos);
 
 				estado = 99;
 				break;
@@ -328,7 +409,6 @@ void identificarComando(string &comando){
 	}
 
 }
-
 
 int main(int argc, char **argv){
 	FILE *arq = fopen(argv[1], "r");

@@ -45,6 +45,9 @@ createTable	../BDI/createTable.c	/^void createTable(FILE* sql)$/;"	f
 escreverJuncao	../BDI/Select.cpp	/^string escreverJuncao(string relacao, string relacaoB, string condicao, string nomeJuncao){$/;"	f
 escreverProjecao	../BDI/Select.cpp	/^string escreverProjecao(string relacao, int qtdAtributos, string listaAtributos, string nomeProjecao){$/;"	f
 escreverSelecao	../BDI/Select.cpp	/^string escreverSelecao(string relacao, string atr, string op, string valor, string nomeSelecao){$/;"	f
+executarJuncao	../BDI/Select.cpp	/^void executarJuncao(string linha){$/;"	f
+executarProjecao	../BDI/Select.cpp	/^void executarProjecao(string linha){$/;"	f
+executarSelecao	../BDI/Select.cpp	/^void executarSelecao(string linha){$/;"	f
 identificarComando	../BDI/Select.cpp	/^void identificarComando(string &comando){$/;"	f
 key	../BDI/createTable.c	/^    bool key;$/;"	m	struct:__anon2	file:
 l	../BDI/createTable.c	/^typedef struct l$/;"	s	file:

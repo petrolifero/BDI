@@ -42,14 +42,14 @@ vector<string> split(const string &s, char delim) {
     return elems;
 }
 
-vector<int> split(const string &s, string delim){
+/*vector<int> split(const string &s, string delim){
 	vector<int> elems;
 	vector<string> aux = split(s, delim.at(0));
 	for(int i = 0; i < aux.size(); i++){
 		elems.push_back(atoi(aux[i].c_str()));
 	}
 	return elems;
-}
+}*/
 
 /**
  *	Remoção de espaços consecutivos
@@ -199,11 +199,11 @@ void executarProjecao(string linha){
 
 	//linha com os valores da i-ésima tupla
 	string inVal;
-	vector<int> inVals;
+	vector<string> inVals;
 	
 	for(int i = 0; i < inCard; i++){
 		inDad >> inVal;
-		inVals = split(inVal, " ");
+		inVals = split(inVal, ' ');
 
 		std::map<int, string>::iterator itDad = projCtlCols.begin();
 		while(it != projCtlCols.end())
@@ -222,6 +222,47 @@ void executarProjecao(string linha){
 	inDad.close();
 	projCtl.close();
 	projDad.close();
+}
+
+bool _satisfaz(string valAtr, string tipoAtr, string operador, string val){
+	if(tipoAtr == "I"){
+		int valorAtr, valor, rc;
+		rc = scanf(valAtr.c_str(), "%d", &valorAtr);
+		assert(rc == 1 && "erro na leitura do valor na relação.\n");
+		rc = scanf(val.c_str(), "%d", &valor);
+		assert(rc == 1 && "erro na leitura do valor de seleção.\n");
+
+		if(operador == "="){
+			return valorAtr == valor;
+		} else if(operador == ">"){
+			return valorAtr > valor;
+		} else if(operador == "<"){
+			return valorAtr < valor;
+		} else if(operador == ">="){
+			return valorAtr >= valor;
+		} else if(operador == "<="){
+			return valorAtr <= valor;
+		} else if(operador == "<>"){
+			return valorAtr != valor;
+		}
+
+	} else if(tipoAtr == "C" ){
+		if(operador == "="){
+			return valAtr == val;
+		} else if(operador == ">"){
+			return valAtr > val;
+		} else if(operador == "<"){
+			return valAtr < val;
+		} else if(operador == ">="){
+			return valAtr >= val;
+		} else if(operador == "<="){
+			return valAtr <= val;
+		} else if(operador == "<>"){
+			return valAtr != val;
+		}
+	}
+
+	assert(false && "Tipo inválido, não é I, e nem C.\n");
 }
 
 void executarSelecao(string linha){
@@ -247,9 +288,12 @@ void executarSelecao(string linha){
 
 	int inGrau,
 		inCard,
-		selCard;
+		selCard,
+		selInd; //índice do atributo sendo selecionado
 
-	string inAtr;
+	string inAtr,
+		   inVal,
+		   selTipo;
 
 
 	inCtl.open(nomeCatalogo.c_str(), fstream::in);
@@ -265,7 +309,36 @@ void executarSelecao(string linha){
 
 	// TODO: encontrar atributo sendo selecionado
 	// TODO: aplicar teste à cada tupla
-	
+	vector<string> inMods;
+
+	for(int i = 0; i < inGrau; i++){
+		inCtl >> inAtr;
+		inMods = split(inAtr, ',');
+
+		if(inMods[0] == nomeAtr){
+			selInd = i;
+			selTipo = inMods[1];
+		}
+	}
+
+	// vetor com a i-ésima tupla da relação
+	vector<string> inVals;
+	for(int i = 0; i < inCard; i++){
+		inDad >> inVal;
+		inVals = split(inVal, ' ');
+
+		if(_satisfaz(inVals[selInd], selTipo, operador, valor)){
+			std::vector<string>::iterator itDad = inVals.begin();
+			while(itDad != inVals.end())
+			{
+				selDad << *itDad << " ";
+				cout << *itDad << " ";
+				itDad++;
+			}
+		}
+		selDad << endl;
+		cout << endl;
+	}
 
 	selCtl << inGrau << "," << selCard << endl;
 

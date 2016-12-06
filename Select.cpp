@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <map>
 #include <algorithm>
 #include <cassert>
 #include <stdlib.h>
@@ -39,6 +40,15 @@ vector<string> split(const string &s, char delim) {
     vector<string> elems;
     split(s, delim, elems);
     return elems;
+}
+
+vector<int> split(const string &s, string delim){
+	vector<int> elems;
+	vector<string> aux = split(s, delim.at(0));
+	for(int i = 0; i < aux.size(); i++){
+		elems.push_back(atoi(aux[i].c_str()));
+	}
+	return elems;
 }
 
 /**
@@ -96,7 +106,7 @@ string escreverJuncao(string relacao, string relacaoB, string condicao, string n
  *	TODO: relacionar com catalogo e dados
  * */
 
-vector<string> separarCampos(string linha){
+vector<string> separarParametros(string linha){
 	size_t inicio = 2;
 	size_t fim = linha.length() - 2;
 
@@ -107,91 +117,172 @@ vector<string> separarCampos(string linha){
 
 void executarProjecao(string linha){
 
-	vector<string> dados = separarCampos(linha);
+	// Parâmetros da operação algébrica de projeção
+	vector<string> parametros = separarParametros(linha);
 
-	string 	nomeTabela = dados[0],
+	// nomes de parâmetros em particular
+	string 	nomeTabela = parametros[0],
 			nomeCatalogo = nomeTabela + ".ctl",
 			nomeDados = nomeTabela + ".dad";
 
-	const char *qtd_c = dados[1].c_str();
-
-	int tam = atoi(qtd_c);
-
-	vector<string> atrs;
+	int tam = atoi(parametros[1].c_str()), // qtd de atrs na projeção
+		inGrau, //grau da relação de entrada
+		inCard, //cardinalidade da relação de entrada
+		projGrau = 0; // grau da projeção
 	
+	//atributo da entrada sendo lido no Ctl
+	string inAtr;
+
+	//Atributos selecionados na projeção
+	vector<string> projAtrs;
+	
+	//nomes dos arquivos
+	string nomeResultante(parametros[2 + tam]),
+		   nomeResCtl(nomeResultante + ".ctl"),
+		   nomeResDad(nomeResultante + ".dad");
+
+	//Arquivos utilizados
+	fstream projCtl, //Ctl da projeção
+			projDad, //dad da projeção
+			inCtl, 	//ctl da entrada
+			inDad; //dad da entrada
+
 	for(int i = 2; i < 2 + tam; i++){
-		atrs.push_back(dados[i]);
+		projAtrs.push_back(parametros[i]);
 	}
-
-	string nomeResultante(dados[2 + tam]);
 	
-	// TODO: escrever execução em arquivo e na tela
-	// 1. Criar arquivo de catálogo final
-	fstream saidaCtl;
-	saidaCtl.open(nomeResultante.c_str(), fstream::out);
-
 	// 1. Ler arquivo de catálogo
-	fstream catalogo;
-	catalogo.open(nomeCatalogo.c_str(), fstream::in);
+	inCtl.open(nomeCatalogo.c_str(), fstream::in);
 
-	int grau, cardinalidade,
-		grauProj = 0, cardProj = 0;
-	string lin,
-		   saidaCtlStr;
+	// 2. Criar arquivo de catálogo final
+	projCtl.open(nomeResCtl.c_str(), fstream::out);
 
-	catalogo >> lin;
+	inCtl >> inAtr;
 	
 	// TODO: testar
-	assert(2 == scanf(lin.c_str(), "%d,%d\n", &grau, &cardinalidade) 
+	assert(2 == scanf(inAtr.c_str(), "%d,%d\n", &inGrau, &inCard) 
 			&& "Erro na leitura da cardinalidade e grau.\n");
 	
 	//Construção do CTL
-	string atributo;
-	vector<string> modificadores;
+	map<int, string> projCtlCols;
 
-	for(int i = 0; i < grau; i++){
-		catalogo >> atributo;
-		modificadores = split(atributo, ',');
-		if(find(atrs.begin(), atrs.end(), modificadores[0]) != atrs.end()){
-			grauProj++;
-			saidaCtlStr += atributo + "\n";
+	// coluna e seus modificadores 
+	vector<string> inMods;
+
+	for(int i = 0; i < inGrau; i++){
+		inCtl >> inAtr;
+		inMods = split(inAtr, ',');
+		//se a coluna está na projeção...
+		if(find(projAtrs.begin(), projAtrs.end(), inMods[0]) != projAtrs.end()){
+			// acrescente-a ao mapa
+			projCtlCols.insert(make_pair(i, inAtr));
+			//aumente o grau da projeção
+			projGrau++;
 		}
 	}
 
-	// Construção do DAD
+	projCtl << projGrau << "," << inCard << endl;
+	cout << projGrau << "," << inCard << endl;
 
-	/*
-	cout << "Grau:" << grau << "\n";
-	cout << "Cardinalidade:" << cardinalidade << "\n";
-	*/
+	std::map<int, string>::iterator it = projCtlCols.begin();
+    while(it != projCtlCols.end())
+    {
+        projCtl << it->second << endl;
+		cout << it->second << endl;
+        it++;
+    }
 
-	// 2. Ler arquivo de dados
-	fstream arqDados;
-	arqDados.open(nomeDados.c_str(), fstream::in);
-	// 3. Executar projeção
-	// 4. Escrever em arquivo
-	// 5. Escrever na tela
-	catalogo.close();
-	arqDados.close();
-	saidaCtl.close();
+	// 3. Escrever arquivo Dad da projeção
+	projDad.open(nomeResDad.c_str(), fstream::out);
+	// Iterar sobre os índices no mapa, só obtendo do DAD da relação aqueles valores dos índices passados
+	inDad.open(nomeDados.c_str(), fstream::in);
+
+	//linha com os valores da i-ésima tupla
+	string inVal;
+	vector<int> inVals;
+	
+	for(int i = 0; i < inCard; i++){
+		inDad >> inVal;
+		inVals = split(inVal, " ");
+
+		std::map<int, string>::iterator itDad = projCtlCols.begin();
+		while(it != projCtlCols.end())
+		{
+			projDad << inVals[it->first] << " ";
+			cout << inVals[it->first] << " ";
+			it++;
+		}
+		projDad << endl;
+		cout << endl;
+	}
+
+	//Escrita do arquivo
+
+	inCtl.close();
+	inDad.close();
+	projCtl.close();
+	projDad.close();
 }
 
 void executarSelecao(string linha){
 
-	vector<string> dados = separarCampos(linha);
+	vector<string> parametros = separarParametros(linha);
 
-	string nomeTabela(dados[0]),
-		   nomeAtr(dados[1]),
-		   operador(dados[2]),
-		   valor(dados[3]),
-		   nomeFinal(dados[4]);
+	string nomeTabela(parametros[0]),
+		   nomeCatalogo = nomeTabela + ".ctl",
+		   nomeDados = nomeTabela + ".dad",
 
-	// TODO: escrever execucao em arquivo e na tela
+		   nomeAtr(parametros[1]),
+		   operador(parametros[2]),
+		   valor(parametros[3]),
+
+		   nomeFinal(parametros[4]),
+		   selNomeCtl(nomeFinal + ".ctl"),
+		   selNomeDad(nomeFinal + ".dad");
+
+	fstream inCtl,
+			inDad,
+			selCtl,
+			selDad;
+
+	int inGrau,
+		inCard,
+		selCard;
+
+	string inAtr;
+
+
+	inCtl.open(nomeCatalogo.c_str(), fstream::in);
+	inDad.open(nomeDados.c_str(), fstream::in);
+
+	inCtl >> inAtr;
+
+	assert(2 == scanf(inAtr.c_str(), "%d,%d\n", &inGrau, &inCard) 
+			&& "Erro na leitura da cardinalidade e grau.\n");
+
+	selCtl.open(selNomeCtl.c_str(), fstream::out);
+	selDad.open(selNomeDad.c_str(), fstream::out);
+
+	// TODO: encontrar atributo sendo selecionado
+	// TODO: aplicar teste à cada tupla
+	
+
+	selCtl << inGrau << "," << selCard << endl;
+
+	//ctl da relação é igual à da seleção
+	while(inCtl >> inAtr){
+		selCtl << inAtr;
+	}
+
+	inCtl.close();
+	inDad.close();
+	selCtl.close();
+	selDad.close();
 }
 
 void executarJuncao(string linha){
 
-	vector<string> dados = separarCampos(linha);
+	vector<string> dados = separarParametros(linha);
 
 	string nomeTabA(dados[0]),
 		   nomeTabB(dados[1]),

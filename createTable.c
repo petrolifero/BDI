@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,7 +12,7 @@
 
 typedef enum
 {
-    INT,STRING;
+    INT,STRING
 } Type;
 
 typedef struct
@@ -33,51 +34,107 @@ LinkedList* readAtributes(FILE* sql)
 {
     LinkedList* aux;
     char type[201];
-    int i;
+    unsigned int i;
+    char receive[31];
+    char final;
+    memset(receive,0,31);
     aux=malloc(sizeof(LinkedList));
-    fscanf(sql,"%s %s", aux->t.nameAtribute, type);
+    fscanf(sql,"%s %[^, )]", aux->t.nameAtribute, type);
     for(i=0; i<strlen(aux->t.nameAtribute); i++)
     {
-        aux->t.nameAtribute[i]=toUpper(aux->t.nameAtribute[i]);
+        aux->t.nameAtribute[i]=toupper((int)aux->t.nameAtribute[i]);
     }
-    if(type[strlen(type)-2]==',')
+    aux->t.type=toupper(type[0])=='S'?STRING:INT;
+    fscanf(sql,"%[^,)]%c",receive,&final);
+    for(i=0; i<strlen(receive); i++)
     {
-        aux->t.type=type[strlen(type)-3]=='G'?STRING:INT;
-        aux->prox=readAtributes(sql);
+	receive[i]=toupper(receive[i]);
     }
-    else if(type[strlen(type)-2]==')')
+    aux->t.notNull=strstr(receive,"NN")==NULL;
+    aux->t.key=strstr(receive,"KEY")==NULL;
+    aux->t.ord=strstr(receive,"ORD")==NULL;
+    if(final==')')
     {
-        aux->t.type=type[strlen(type)-3]=='G'?STRING:INT;
-        aux->prox=NULL;
+	aux->prox=NULL;
     }
     else
     {
-        aux->t.type=type[strlen(type)-2]=='G'?STRING:INT;
-        char other[5];
-        int r;
-        char comma;
-        r=fscanf(sql, "%s", other);
-        while(r==1)
-        {
-            if(other[0]=='N')
-            {
-                aux->t.notNull=true;
-            }
-            else if(other[0]=='K')
-            {
-                aux->t.key=true;
-            }
-            else
-            {
-                aux->t.ord=true;
-            }
-            if(other[3])
-                r=fscanf(sql, "%s", other);
-
-        }
+        char a;
+	next:
+	fscanf(sql,"%c", &a);
+	if(a!=' ')
+	{
+		fseek(sql,-1,SEEK_CUR);
+		aux->prox=readAtributes(sql);
+	}
+        else
+	{
+		goto next;
+	}
     }
+    return aux;
 }
 
+int degree(LinkedList* l)
+{
+	int len=0;
+	while(l)
+	{
+		len++;
+		l=l->prox;
+	}
+	return len;
+}
+
+int howMuchKeys(LinkedList* l)
+{
+	int count=0;
+	while(l)
+	{
+		if(l->t.key)
+			count++;
+		l=l->prox;
+	}
+	return count;
+}
+
+void freeList(LinkedList* l)
+{
+	if(!l)
+	{
+		freeList(l->prox);
+		free(l);
+	}
+}
+
+int howMuchOrd(LinkedList* l)
+{
+        int count=0;
+        while(l)
+        {
+                if(l->t.ord)
+                        count++;
+                l=l->prox;
+        }
+        return count;
+}
+
+int keyOrOrdButNULL(LinkedList* l)
+{
+	while(l)
+        {
+                if((l->t.ord || l->t.key) && !l->t.notNull)
+                        return 1;
+                l=l->prox;
+        }
+	return 0;
+}
+
+void createEmptyFile(char* str)
+{
+	FILE* fp=fopen(str,"w");
+	fclose(fp);
+}
 
 
 void createTable(FILE* sql)
@@ -91,7 +148,7 @@ void createTable(FILE* sql)
     nameFile=(char*)calloc(sizeof(char), 504); //table name + ".ctl"
     rewind(sql);
     fscanf(sql,"%*13s"); /*ignore "CREATE TABLE "*/
-    fscanf(sql,"%s(%*c", nameTable); /*ignore the '(' and the newLine*/
+    fscanf(sql,"%s( ", nameTable); /*ignore the '(' and the space*/
     strcpy(nameFile,nameTable);
     strcat(nameFile,".ctl");
     ctl=fopen(nameFile, "r");
@@ -100,14 +157,12 @@ void createTable(FILE* sql)
         fclose(ctl);
         free(nameFile);
         free(nameTable);
-        return TABLEALREADYEXISTS;
     }
     ctl=fopen(nameFile, "w");
     if(!ctl)
     {
         free(nameFile);
         free(nameTable);
-        return PROBLEMSTOOPENFILE;
     }
     atributes=readAtributes(sql);
     if(howMuchKeys(atributes) != 1)
@@ -116,7 +171,6 @@ void createTable(FILE* sql)
         free(nameFile);
         free(nameTable);
         fclose(ctl);
-        return MULTIPLEKEY;
     }
     if(howMuchOrd(atributes) != 1)
     {
@@ -124,7 +178,6 @@ void createTable(FILE* sql)
         free(nameFile);
         free(nameTable);
         fclose(ctl);
-        return MULTIPLEORD;
     }
     if(keyOrOrdButNULL(atributes))
     {
@@ -132,7 +185,6 @@ void createTable(FILE* sql)
         free(nameFile);
         free(nameTable);
         fclose(ctl);
-        return KEYORORDBUTNULL;
     }
     strcpy(nameFile, nameTable);
     strcat(nameFile, ".dad");
@@ -159,5 +211,4 @@ void createTable(FILE* sql)
     }
     freeList(atributes);
     fclose(ctl);
-    return 0;
 }

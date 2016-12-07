@@ -3,8 +3,7 @@ CPP=g++
 CFLAGS=-Wall -g -std=c99
 CPPFLAGS=-std=c++11 -march=native -g
 CSRCS=$(wildcard src/*.c)
-CPPSRCS=$(wildcard src/*.cpp)
-LDFLAGS= -lm -lstdc++
+CPPSRCS=$(wildcard src/cpp/*.cpp)
 
 select: $(CPPSRCS)
 	@mkdir -p bin

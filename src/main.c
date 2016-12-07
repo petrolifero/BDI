@@ -1,7 +1,11 @@
 #include <stdio.h>
 //#include "select.cpp"
 #include "createTable.c"
+<<<<<<< HEAD
 //#include "insert.c"
+=======
+#include "insert.c"
+>>>>>>> 1f4e7d7e8978aa72cbf74b6b559ffc6a3e0ea3cb
 
 int main(int argc, char* argv[])
 {

@@ -24,6 +24,7 @@ int main(int argc, char* argv[])
     fseek(fp,-1,SEEK_CUR);
     fprintf(fp,"%c",c);
   }
+  rewind(fp);
   switch(initial)
   {
     case 'S':

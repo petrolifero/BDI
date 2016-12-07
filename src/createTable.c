@@ -4,17 +4,19 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+#include "type.h"
+
+
 #define TABLEALREADYEXISTS 1
 #define PROBLEMSTOOPENFILE 2
 #define MULTIPLEKEY 3
 #define MULTIPLEORD 4
 #define KEYORORDBUTNULL 5
 
-typedef enum
-{
-    INT,STRING
-} Type;
 
+/*enum for type of a atribute*/
+
+/*struct to atribute*/
 typedef struct
 {
     char nameAtribute[501];
@@ -24,12 +26,15 @@ typedef struct
     bool key;
 } tableCTL;
 
+/*list of atributes*/
 typedef struct l
 {
     tableCTL t;
     struct l *prox;
 }LinkedList;
 
+
+/*read atributes from sql and return a list of*/
 LinkedList* readAtributes(FILE* sql)
 {
     LinkedList* aux;
@@ -75,6 +80,7 @@ LinkedList* readAtributes(FILE* sql)
     return aux;
 }
 
+/*calcule number of atributes*/
 int degree(LinkedList* l)
 {
 	int len=0;
@@ -86,6 +92,7 @@ int degree(LinkedList* l)
 	return len;
 }
 
+/*return number of keys*/
 int howMuchKeys(LinkedList* l)
 {
 	int count=0;
@@ -98,6 +105,7 @@ int howMuchKeys(LinkedList* l)
 	return count;
 }
 
+/*free list*/
 void freeList(LinkedList* l)
 {
 	if(!l)
@@ -107,6 +115,7 @@ void freeList(LinkedList* l)
 	}
 }
 
+/*return number of ord atributes*/
 int howMuchOrd(LinkedList* l)
 {
         int count=0;
@@ -119,6 +128,7 @@ int howMuchOrd(LinkedList* l)
         return count;
 }
 
+/*return if exist some atribute key or ord but set to null*/
 int keyOrOrdButNULL(LinkedList* l)
 {
 	while(l)
@@ -130,6 +140,7 @@ int keyOrOrdButNULL(LinkedList* l)
 	return 0;
 }
 
+/*create a empty file*/
 void createEmptyFile(char* str)
 {
 	FILE* fp=fopen(str,"w");
@@ -137,6 +148,7 @@ void createEmptyFile(char* str)
 }
 
 
+/*main function to read sql and create ctl*/
 void createTable(FILE* sql)
 {
     char* nameTable;

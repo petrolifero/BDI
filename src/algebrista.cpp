@@ -358,12 +358,21 @@ void executarSelecao(string linha){
 
 void executarJuncao(string linha){
 
-	vector<string> dados = separarParametros(linha);
+	vector<string> parametros = separarParametros(linha);
 
-	string nomeTabA(dados[0]),
-		   nomeTabB(dados[1]),
-		   cond(dados[2]),
-		   nomef(dados[3]);
+	string nomeTabA(parametros[0]),
+		   nomeTabB(parametros[1]),
+		   // TODO: fazer o parse da condição: <atr>=<atr> ou <tab1>.<atr> = <tab2>.<atr>
+		   cond(parametros[2]),
+		   nomef(parametros[3]),
+
+		   nomeCtlA = nomeTabA + ".ctl",
+		   nomeDadA = nomeTabA + ".dad",
+		   nomeCtlB = nomeTabB + ".ctl",
+		   nomeDadB = nomeTabB + ".dad",
+
+		   nomeCtlJun = nomef + ".ctl",
+		   nomeDadJun = nomef + ".dad";
 
 	fstream inCtlA,
 			inDadA,
@@ -372,12 +381,18 @@ void executarJuncao(string linha){
 			junCtl,
 			junDad;
 
-	inCtlA.abrir(
-	inDadA.abrir(
-	inCtlB.abrir
-	inDadB.abrir
-	junCtl.abrir
-	junDad.abrir
+	abrir(inCtlA, nomeCtlA.c_str(), fstream::in, "Falha na abertura do 1º Arquivo de Catálogo: \n");
+	abrir(inDadA, nomeDadA.c_str(), fstream::in, "Falha na abertura do 2º Arquivo de Dados: \n");
+	abrir(inCtlB, nomeCtlB.c_str(), fstream::in, "Falha na abertura do 1º Arquivo de Catálogo: \n");
+	abrir(inDadB, nomeDadB.c_str(), fstream::in, "Falha na abertura do 2º Arquivo de Dados: \n");
+
+	abrir(junCtl, nomeCtlJun.c_str(), fstream::out, "Falha na criação do Arquivo de Catálogo: \n");
+	abrir(junDad, nomeDadJun.c_str(), fstream::out, "Falha na criação do Arquivo de dados: \n");
+
+	// TODO: Ler ctl's, descobrir colunas de verificação da condição
+	// TODO: Juntar ctl's
+	// TODO: Juntar dad's
+	// TODO: Escrever na tela
 
 	inCtlA.close();
 	inDadA.close();

@@ -1,0 +1,2 @@
+SELECT nome,tel
+	FROM A;

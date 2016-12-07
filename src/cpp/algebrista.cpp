@@ -391,6 +391,22 @@ void executarSelecao(string linha){
 
 void executarJuncao(string linha){
 
+	/*
+	 *	Algoritmo de junção:
+	 *
+	 *	abrir arquivos 1 e 2
+	 *	identificar atributo sendo usado como critério de junção
+	 *	verificar se atributo está ordenado ou não
+	 *	se não está ordenado,
+	 *		ordenar linhas
+	 * 	andar com iteradores sobre as linhas de cada tabela
+	 * 		se tupla na 1ª e tupla na 2ª satisfazem critério,
+	 * 			junção da tupla na 1ª com a tupla na 2º entra na tabela final
+	 * 	fechar arquivo de junção
+	 * 	fechar arquivos 1 e 2
+	 *
+	 */
+
 	vector<string> parametros = separarParametros(linha);
 
 	string nomeTabA(parametros[0]),
@@ -400,12 +416,14 @@ void executarJuncao(string linha){
 
 		   nomeCtlA = nomeTabA + ".ctl",
 		   nomeDadA = nomeTabA + ".dad",
+
 		   nomeCtlB = nomeTabB + ".ctl",
 		   nomeDadB = nomeTabB + ".dad",
 
 		   nomeCtlJun = nomef + ".ctl",
 		   nomeDadJun = nomef + ".dad";
 
+	//Acomodar possibilidade de haver ou não o "."
 	string nomeAtrA = parseFirstAtrInTab(cond), 
 		   operador = parseOp(cond),
 		   nomeAtrB = parseLastAtrInTab(cond);
@@ -426,19 +444,27 @@ void executarJuncao(string linha){
 		indA,
 		indB;
 
-	abrir(inCtlA, nomeCtlA.c_str(), fstream::in, "Falha na abertura do 1º Arquivo de Catálogo: \n");
-	abrir(inDadA, nomeDadA.c_str(), fstream::in, "Falha na abertura do 2º Arquivo de Dados: \n");
-	abrir(inCtlB, nomeCtlB.c_str(), fstream::in, "Falha na abertura do 1º Arquivo de Catálogo: \n");
-	abrir(inDadB, nomeDadB.c_str(), fstream::in, "Falha na abertura do 2º Arquivo de Dados: \n");
+	abrir(inCtlA, nomeCtlA.c_str(), fstream::in, 
+			"Falha na abertura do 1º Arquivo de Catálogo: \n");
+	abrir(inDadA, nomeDadA.c_str(), fstream::in, 
+			"Falha na abertura do 2º Arquivo de Dados: \n");
 
-	abrir(junCtl, nomeCtlJun.c_str(), fstream::out, "Falha na criação do Arquivo de Catálogo: \n");
-	abrir(junDad, nomeDadJun.c_str(), fstream::out, "Falha na criação do Arquivo de dados: \n");
+	abrir(inCtlB, nomeCtlB.c_str(), fstream::in, 
+			"Falha na abertura do 1º Arquivo de Catálogo: \n");
+	abrir(inDadB, nomeDadB.c_str(), fstream::in, 
+			"Falha na abertura do 2º Arquivo de Dados: \n");
+
+	abrir(junCtl, nomeCtlJun.c_str(), fstream::out, 
+			"Falha na criação do Arquivo de Catálogo: \n");
+	abrir(junDad, nomeDadJun.c_str(), fstream::out, 
+			"Falha na criação do Arquivo de dados: \n");
 
 	// TODO: Ler ctl's, descobrir colunas de verificação da condição
 	
 	string linhaCtlA, 
 		   linhaCtlB;
 
+	//Leitura da Linha com grau e cardinalidade
 	inCtlA >> linhaCtlA;
 
 	assert(2 == scanf(linhaCtlA.c_str(), "%d,%d\n", &grauA, &cardA) 
@@ -450,10 +476,12 @@ void executarJuncao(string linha){
 			&& "Erro na leitura da cardinalidade e grau.\n");
 
 	grauJ = grauA + grauB;
-	cardJ = (cardA > cardB) ? cardA : cardB;
+	//cardJ = (cardA > cardB) ? cardA : cardB;
+	//TODO: determinar cardinalidade da junção
 
 	junCtl << grauJ << "," << cardJ << endl;
 
+	//modificadores nas tabelas de ctl
 	vector<string> mods;
 	for(int i = 0; i < grauA; i++){
 		inCtlA >> linhaCtlA;
@@ -463,6 +491,7 @@ void executarJuncao(string linha){
 
 		if(mods[0] == nomeAtrA){
 			indA = i;
+			// TODO: verificar se há ordenação
 			// achei o atributo que regerá a junção
 		}
 	}
@@ -475,32 +504,22 @@ void executarJuncao(string linha){
 
 		if(mods[0] == nomeAtrB){
 			indB = i;
+			// TODO: verificar se há ordenação
 			// achei o atributo que regerá a junção
 		}
 	}
 
-	vector<string> colunasA, colunasB;
-	string linhaA, linhaB;
+	// TODO: ordenar tabelas não ordenadas
+	
+	// TODO: trabalhar em iteradores, e não em linhas
 
-	bool lerA, lerB;
+	vector<string> linhasA, linhasB;
+	vector<string>::iterator itArqA = linhasA.begin(),
+							 itArqB = linhasB.begin();
 
-	for(int i = 0; i < cardJ; i++){
-		if(lerA){
-			inDadA >> linhaA;
-			colunasA = split(linhaA, ' ');
-		} else {
-			
-		}
-		
-		if(lerB) {
-			inDadB >> linhaB;
-			colunasB = split(linhaB, ' ');
-		} else {
-		
-		}
-
-
-
+	while(itArqA != linhasA.end() 
+			&& itArqB != linhasB.end()){	
+		// TODO: aplicar lógica de junção
 	}
 
 	inCtlA.close();

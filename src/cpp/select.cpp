@@ -177,10 +177,6 @@ void identificarComando(string &comando){
 int main(int argc, char **argv){
 	FILE *arq = fopen(argv[1], "r");
 	sql_select(arq);
-	sql_select(arq);
-	sql_select(arq);
-	sql_select(arq);
-	sql_select(arq);
 
 	parse();
 

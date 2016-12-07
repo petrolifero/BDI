@@ -1,0 +1,2 @@
+SELECT nome,tipo,tel
+	FROM (A JOIN B ON x=y);

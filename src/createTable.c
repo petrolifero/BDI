@@ -43,7 +43,7 @@ LinkedList* readAtributes(FILE* sql)
     char receive[31];
     char final;
     memset(receive,0,31);
-    aux=malloc(sizeof(LinkedList));
+    aux=(LinkedList*)malloc(sizeof(LinkedList));
     fscanf(sql,"%s %[^, )]", aux->t.nameAtribute, type);
     for(i=0; i<strlen(aux->t.nameAtribute); i++)
     {

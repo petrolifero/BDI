@@ -6,6 +6,7 @@
 #include <iterator>
 #include <errno.h>
 #include "algebrista.cpp"
+#include "select.h"
 
 using namespace boost;
 using namespace std;

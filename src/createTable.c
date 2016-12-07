@@ -149,7 +149,7 @@ void createEmptyFile(char* str)
 
 
 /*main function to read sql and create ctl*/
-void createTable(FILE* sql)
+void sql_createTable(FILE* sql)
 {
     char* nameTable;
     char* nameFile;

@@ -381,6 +381,13 @@ void executarJuncao(string linha){
 			junCtl,
 			junDad;
 
+	int grauA,
+		grauB,
+		grauJ,
+		cardA,
+		cardB,
+		cardJ;
+
 	abrir(inCtlA, nomeCtlA.c_str(), fstream::in, "Falha na abertura do 1º Arquivo de Catálogo: \n");
 	abrir(inDadA, nomeDadA.c_str(), fstream::in, "Falha na abertura do 2º Arquivo de Dados: \n");
 	abrir(inCtlB, nomeCtlB.c_str(), fstream::in, "Falha na abertura do 1º Arquivo de Catálogo: \n");
@@ -390,6 +397,7 @@ void executarJuncao(string linha){
 	abrir(junDad, nomeDadJun.c_str(), fstream::out, "Falha na criação do Arquivo de dados: \n");
 
 	// TODO: Ler ctl's, descobrir colunas de verificação da condição
+	string linhaCtl;
 	// TODO: Juntar ctl's
 	// TODO: Juntar dad's
 	// TODO: Escrever na tela

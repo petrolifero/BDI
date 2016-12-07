@@ -39,10 +39,10 @@ typedef struct
 
 
 
-void insert(FILE* sql)
+void sql_insert(FILE* sql)
 {
         char tableName[301], tablectl[304];
-	File* fp;
+	FILE* fp;
 	int aux;
 	int card;
 	ListInput* input,*auxinput;
@@ -58,9 +58,9 @@ void insert(FILE* sql)
 	if(!fp)
 		return;
 	rewind(fp);
-	while(a!='\n')
+	while(c!='\n')
 	{
-		fscanf(fp,"%c", &a);
+		fscanf(fp,"%c", &c);
 	}
 
 	input=readInput(sql);

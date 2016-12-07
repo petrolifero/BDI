@@ -31,10 +31,10 @@ int main(int argc, char* argv[])
       sql_select(fp);
       break;
     case 'I':
-      insert(fp);
+      sql_insert(fp);
       break;
     case 'C':
-      createTable(fp);
+      sql_createTable(fp);
       break;
   }
   return 0;

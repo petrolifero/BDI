@@ -68,9 +68,10 @@ void sql_insert(FILE* sql)
 
 	if(len(input)!=len(ctl))
 		return;
-	for(auxctl=ctl,auxinput=input; auxctl && auxinput; auxctl=auxctl->prox,auxinput=auxinput->prox);
-	if(auxctl!=auxinput) return;
-	
+	for(auxctl=ctl,auxinput=input; auxctl && auxinput; auxctl=auxctl->prox,auxinput=auxinput->prox)
+	{
+	}
+
 
 
 

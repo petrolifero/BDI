@@ -158,10 +158,10 @@ void executarProjecao(string linha){
 	}
 	
 	// 1. Ler arquivo de catálogo
-	abrir(inCtl, nomeCatalogo.c_str());
+	abrir(inCtl, nomeCatalogo.c_str(), fstream::in, "ERRO: Catálogo da tabela inexistente.\n");
 
 	// 2. Criar arquivo de catálogo final
-	abrir(projCtl, nomeCatalogo.c_str(), fstream::out);
+	abrir(projCtl, nomeCatalogo.c_str(), fstream::out, "ERRO: Problema na criação do arquivo: \n");
 
 	inCtl >> inAtr;
 	
@@ -199,9 +199,9 @@ void executarProjecao(string linha){
     }
 
 	// 3. Escrever arquivo Dad da projeção
-	abrir(projDad, nomeResDad.c_str());
+	abrir(projDad, nomeResDad.c_str(), fstream::out, "ERRO: Falha na criação do arquivo: \n");
 	// Iterar sobre os índices no mapa, só obtendo do DAD da relação aqueles valores dos índices passados
-	abrir(inDad, nomeDados.c_str());
+	abrir(inDad, nomeDados.c_str(), fstream::in, "ERRO: Arquivo de dados da tabela inexistente: \n");
 
 	//linha com os valores da i-ésima tupla
 	string inVal;
@@ -301,16 +301,16 @@ void executarSelecao(string linha){
 		   inVal,
 		   selTipo;
 
-	abrir(inCtl, nomeCatalogo.c_str());
-	abrir(inDad, nomeDados.c_str());
+	abrir(inCtl, nomeCatalogo.c_str(), fstream::in, "ERRO: Catálogo da tabela inexistente.\n");
+	abrir(inDad, nomeDados.c_str(), fstream::in, "ERRO: Arquivo de dados da tabela inexistente: \n");
 
 	inCtl >> inAtr;
 
 	assert(2 == scanf(inAtr.c_str(), "%d,%d\n", &inGrau, &inCard) 
 			&& "Erro na leitura da cardinalidade e grau.\n");
 
-	abrir(selCtl, selNomeCtl.c_str(), fstream::out);
-	abrir(selDad, selNomeDad.c_str(), fstream::out);
+	abrir(selCtl, selNomeCtl.c_str(), fstream::out, "ERRO: Falha na criação do arquivo: \n");
+	abrir(selDad, selNomeDad.c_str(), fstream::out, "ERRO: Falha na criação do arquivo: \n");
 
 	vector<string> inMods;
 

@@ -1,32 +1,18 @@
-#include <stdio.h>
-#include <map>
-#include <algorithm>
-#include <cassert>
-#include <stdlib.h>
-#include <fstream>
 #include <string>
+#include <fstream>
+#include <map>
 #include <vector>
-#include <iterator>
-#include <sstream>
-#include <iostream>
 #include <boost/range/algorithm_ext/erase.hpp>
 #include <boost/algorithm/string.hpp>
-#include <errno.h>
-#include <cassert>
+#include <sstream>
+#include <iostream>
 
-/**
- *	Util
- * */
-
-using namespace boost;
 using namespace std;
-
-void identificarComando(string &comando);
+using namespace boost;
 
 /**
- *	Seraração de Strings em vetores
- * 
- * */
+ *	Separação de Strings em vetores
+ */
 void split(const string &s, char delim, vector<string> &elems) {
     stringstream ss;
     ss.str(s);
@@ -41,15 +27,6 @@ vector<string> split(const string &s, char delim) {
     split(s, delim, elems);
     return elems;
 }
-
-/*vector<int> split(const string &s, string delim){
-	vector<int> elems;
-	vector<string> aux = split(s, delim.at(0));
-	for(int i = 0; i < aux.size(); i++){
-		elems.push_back(atoi(aux[i].c_str()));
-	}
-	return elems;
-}*/
 
 /**
  *	Remoção de espaços consecutivos
@@ -66,14 +43,30 @@ void limpar(string &s){
 }
 
 /**
+ *	Separa strings delimitadas por vírgulas
+ * */
+vector<string> separarParametros(string linha){
+	size_t inicio = 2;
+	size_t fim = linha.length() - 2;
+
+	string sublinha = linha.substr(inicio, fim);
+
+	return split(sublinha, ',');
+}
+
+/**
  *
  *	Álgebra Relacional
  *
  * */
+using namespace std;
 
+/**
+ *	TODO Proposta: caminho como entrada da função
+ * */
 string escreverProjecao(string relacao, int qtdAtributos, string listaAtributos, string nomeProjecao){
-	fstream arquivo;
-	arquivo.open("Operacao.alg", fstream::app);
+	ofstream arquivo;
+	arquivo.open("etc/Operacao.alg", fstream::app);
 
 	arquivo << "P(" << relacao << "," << qtdAtributos << "," << listaAtributos << "," << nomeProjecao << ")\n";
 
@@ -82,18 +75,24 @@ string escreverProjecao(string relacao, int qtdAtributos, string listaAtributos,
 	return nomeProjecao;
 }
 
+/**
+ *	TODO Proposta: caminho como entrada da função
+ * */
 string escreverSelecao(string relacao, string atr, string op, string valor, string nomeSelecao){
-	fstream arquivo;
-	arquivo.open("Operacao.alg", fstream::app);
+	ofstream arquivo;
+	arquivo.open("etc/Operacao.alg", ofstream::app);
 	arquivo << "S(" << relacao << "," << atr << "," << op << "," << valor << ", " << nomeSelecao << ")\n";
 	arquivo.close();
 
 	return nomeSelecao;
 }
 
+/**
+ *	TODO Proposta: caminho como entrada da função
+ * */
 string escreverJuncao(string relacao, string relacaoB, string condicao, string nomeJuncao){
-	fstream arquivo;
-	arquivo.open("Operacao.alg", fstream::app);
+	ofstream arquivo;
+	arquivo.open("etc/Operacao.alg", ofstream::app);
 
 	arquivo << "J(" << relacao << "," << relacaoB << "," << condicao << "," << nomeJuncao << ")\n";
 
@@ -103,17 +102,7 @@ string escreverJuncao(string relacao, string relacaoB, string condicao, string n
 /**	
  *	Parser Álgebra Relacional
  *
- *	TODO: relacionar com catalogo e dados
  * */
-
-vector<string> separarParametros(string linha){
-	size_t inicio = 2;
-	size_t fim = linha.length() - 2;
-
-	string sublinha = linha.substr(inicio, fim);
-
-	return split(sublinha, ',');
-}
 
 void executarProjecao(string linha){
 
@@ -141,21 +130,21 @@ void executarProjecao(string linha){
 		   nomeResCtl(nomeResultante + ".ctl"),
 		   nomeResDad(nomeResultante + ".dad");
 
-	//Arquivos utilizados
-	fstream projCtl, //Ctl da projeção
-			projDad, //dad da projeção
-			inCtl, 	//ctl da entrada
-			inDad; //dad da entrada
+	ifstream inCtl,//ctl da entrada
+			 inDad;//dad da entrada
+
+	ofstream projCtl,//Ctl da projeção
+			 projDad;//dad da projeção
 
 	for(int i = 2; i < 2 + tam; i++){
 		projAtrs.push_back(parametros[i]);
 	}
 	
 	// 1. Ler arquivo de catálogo
-	inCtl.open(nomeCatalogo.c_str(), fstream::in);
+	inCtl.open(nomeCatalogo.c_str());
 
 	// 2. Criar arquivo de catálogo final
-	projCtl.open(nomeResCtl.c_str(), fstream::out);
+	projCtl.open(nomeResCtl.c_str());
 
 	inCtl >> inAtr;
 	
@@ -193,9 +182,9 @@ void executarProjecao(string linha){
     }
 
 	// 3. Escrever arquivo Dad da projeção
-	projDad.open(nomeResDad.c_str(), fstream::out);
+	projDad.open(nomeResDad.c_str());
 	// Iterar sobre os índices no mapa, só obtendo do DAD da relação aqueles valores dos índices passados
-	inDad.open(nomeDados.c_str(), fstream::in);
+	inDad.open(nomeDados.c_str());
 
 	//linha com os valores da i-ésima tupla
 	string inVal;
@@ -281,9 +270,10 @@ void executarSelecao(string linha){
 		   selNomeCtl(nomeFinal + ".ctl"),
 		   selNomeDad(nomeFinal + ".dad");
 
-	fstream inCtl,
-			inDad,
-			selCtl,
+	ifstream inCtl,
+			inDad;
+
+	ofstream selCtl,
 			selDad;
 
 	int inGrau,
@@ -295,7 +285,6 @@ void executarSelecao(string linha){
 		   inVal,
 		   selTipo;
 
-
 	inCtl.open(nomeCatalogo.c_str(), fstream::in);
 	inDad.open(nomeDados.c_str(), fstream::in);
 
@@ -304,11 +293,9 @@ void executarSelecao(string linha){
 	assert(2 == scanf(inAtr.c_str(), "%d,%d\n", &inGrau, &inCard) 
 			&& "Erro na leitura da cardinalidade e grau.\n");
 
-	selCtl.open(selNomeCtl.c_str(), fstream::out);
-	selDad.open(selNomeDad.c_str(), fstream::out);
+	selCtl.open(selNomeCtl.c_str());
+	selDad.open(selNomeDad.c_str());
 
-	// TODO: encontrar atributo sendo selecionado
-	// TODO: aplicar teste à cada tupla
 	vector<string> inMods;
 
 	for(int i = 0; i < inGrau; i++){
@@ -365,9 +352,18 @@ void executarJuncao(string linha){
 	// TODO: escrever execucao em arquivo e na tela
 }
 
+void abrir(fstream arquivo, const char* caminho, ios_base::openmode mode = fstream::in, 
+		string msg = "Erro abrindo o arquivo: "){
+	arquivo.open(caminho, mode);
+	if ( (arquivo.rdstate() & std::ifstream::failbit ) != 0 )
+		    std::cerr << msg << caminho << endl;
+}
+
 void parse(){
-	fstream arquivo;
-	arquivo.open("Operacao.alg", fstream::in);
+	ifstream arquivo;
+	arquivo.open("etc/Operacao.alg");
+	if ( (arquivo.rdstate() & std::ifstream::failbit ) != 0 )
+		    std::cerr << "Erro abrindo o arquivo de Operacoes Algebricas.\n";
 
 	string linha;
 	
@@ -388,200 +384,4 @@ void parse(){
 	}
 
 	arquivo.close();
-}
-
-/**
- *	SQL
- * */
-
-// Função de interface com código em C
-// obtém comando do arquivo, e passa para o manipulador do select
-// PRE: arquivo está posicionado num SELECT
-void select(FILE *ponteiroArquivo){
-	assert(ponteiroArquivo != NULL && "Ponteiro de arquivo inválido");
-	
-	int rc = 0;
-	char *linha = NULL;
-	size_t tam = 0;
-	
-	rc = getdelim(&linha, &tam, ';', ponteiroArquivo);
-	assert(rc != -1 && "Arquivo corrompido: falha na leitura de um SELECT\n");
-
-	string comando(linha);
-	erase_all(comando, "\n");
-	replace( comando.begin(), comando.end(), '\t', ' ');
-	
-	identificarComando(comando);
-	free(linha);
-}
-
-string parseAtr(string where){
-	size_t found = where.find_first_of("=<>");	
-
-	return where.substr(0, found);
-}
-
-string parseOp(string where){
-	size_t last = where.find_last_of("=<>"),
-		   first = where.find_first_of("=<>");
-
-	string t(1, where.at(last));
-
-	return ( first == last ) ?  t : where.substr(first, last - first);
-}
-
-string parseVal(string where){
-	size_t found = where.find_last_of("=<>");	
-
-	return where.substr(found + 1, where.length());
-}
-
-/**
- *	Função de parsing do comando passado.
- *
- *	PRE: comando é válido, string != NULL
- * */
-void identificarComando(string &comando){
-	
-	if(comando.empty()){
-		return;
-	}
-	
-	limpar(comando);
-
-	//Lista de cláusulas
-	vector<string> clausulas(split(comando, ' '));
-	
-	//Estado inicial: lendo SELECT
-	int estado = 0;
-
-	string atributos;
-	string relacao, where, relacaoB, condicao, 
-		   selecao, projecao, juncao;
-
-	for (int i = 0; i < clausulas.size(); i++){
-		switch(estado){
-			case 0:
-				//Comando SELECT, continua
-				estado++;
-				continue;
-				break;
-			case 1:
-				//ler lista de atributos
-				//atributos = split(clausulas[i], ',');
-				atributos = clausulas[i];
-
-				estado++;
-				break;
-			case 2:
-				//Clausula FROM
-				if(clausulas.size() < 7){
-					//Caso de uma seleção sem join, possivelmente com where
-					estado++;
-				} else {
-					// caso de uma seleção com join, possivelmente com where
-					estado += 3;				
-				}
-				break;
-			case 3:
-				//seleção -join -where
-				//nome da relação
-				relacao = clausulas[i];
-				
-				//seleção -join +where
-				if(clausulas.size() > 4){
-					estado++;
-				} else{
-					//fim: projeção na relacao, com os atributos
-					erase_all(relacao, ";");
-
-					escreverProjecao(relacao, count(atributos.begin(), atributos.end(), ',') + 1 , 
-							atributos, relacao + "_P_" + atributos);
-
-					estado = 99;
-				}
-
-				break;
-			case 4:
-				//condição where
-				if(clausulas[i] == "WHERE") continue;
-
-				//seleção -join +where
-				where = clausulas[i];
-				erase_all(where, ";");
-				
-				selecao = escreverSelecao(relacao, parseAtr(where), parseOp(where), 
-						parseVal(where), relacao + "_S_" + where);
-				escreverProjecao(selecao, count(atributos.begin(), atributos.end(), ',') + 1,
-						atributos, selecao + "_P_" + atributos);
-
-				estado = 99;
-				break;
-			case 5:
-				//seleção +join ?where
-				if(clausulas[i] == "JOIN") {
-					estado++;
-					break;
-				}
-				relacao = clausulas[i];
-				erase_all(relacao, "(");
-				
-				break;
-			case 6:
-				//seleção +join
-				if(clausulas[i] == "ON"){
-					estado++;
-					break;
-				}
-
-				relacaoB = clausulas[i];
-				break;
-			case 7:
-				condicao = clausulas[i];
-				remove_erase_if(condicao, is_any_of(");"));
-
-				if(clausulas.size() > 8){
-					estado++;
-					continue;
-				}
-
-				juncao = escreverJuncao(relacao, relacaoB, condicao, 
-						relacao + "_J_" + condicao + "_" + relacaoB);
-				escreverProjecao(juncao, count(atributos.begin(), atributos.end(), ',') + 1,
-						atributos, juncao + "_P_" + atributos);
-
-				estado = 99;
-				break;
-			case 8:
-				if(clausulas[i] == "WHERE") continue;
-
-				where = clausulas[i];
-				erase_all(where, ";");
-
-				juncao = escreverJuncao(relacao, relacaoB, condicao,
-						relacao + "_J_" + condicao + "_" + relacaoB);
-				selecao = escreverSelecao(juncao, parseAtr(where), parseOp(where), 
-						parseVal(where), juncao + "_S_" + where);
-				escreverProjecao(selecao, count(atributos.begin(), atributos.end(), ',') + 1, 
-						atributos, selecao + "_P_" + atributos);
-
-				estado = 99;
-				break;
-			default:
-				break;
-		}
-	}
-
-}
-
-int main(int argc, char **argv){
-	FILE *arq = fopen(argv[1], "r");
-	select(arq);
-	select(arq);
-	select(arq);
-	select(arq);
-	select(arq);
-
-	parse();
-	fclose(arq);
 }

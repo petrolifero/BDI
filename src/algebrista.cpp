@@ -6,6 +6,7 @@
 #include <boost/algorithm/string.hpp>
 #include <sstream>
 #include <iostream>
+#include <cassert>
 
 using namespace std;
 using namespace boost;
@@ -13,7 +14,20 @@ using namespace boost;
 /**
  *	Separação de Strings em vetores
  */
+
+void abrir(fstream &arquivo, const char* caminho, ios_base::openmode mode = fstream::in, 
+		string msg = "Erro abrindo o arquivo: "){
+
+	arquivo.open(caminho, mode);
+	if ( (arquivo.rdstate() & std::ifstream::failbit ) != 0 ){
+		std::cerr << msg << caminho << endl;
+		exit(1);
+	}
+}
+
 void split(const string &s, char delim, vector<string> &elems) {
+	if(s.empty()) return;
+
     stringstream ss;
     ss.str(s);
     string item;
@@ -38,6 +52,8 @@ bool BothAreSpaces(char lhs, char rhs) {
 }
 
 void limpar(string &s){
+	if(s.empty()) return;
+
 	string::iterator novo_fim = unique(s.begin(), s.end(), BothAreSpaces);
 	s.erase(novo_fim, s.end());   
 }
@@ -46,6 +62,11 @@ void limpar(string &s){
  *	Separa strings delimitadas por vírgulas
  * */
 vector<string> separarParametros(string linha){
+	if(linha.empty()){
+		vector<string> vec;
+		return vec;
+	}
+
 	size_t inicio = 2;
 	size_t fim = linha.length() - 2;
 
@@ -55,18 +76,15 @@ vector<string> separarParametros(string linha){
 }
 
 /**
- *
- *	Álgebra Relacional
- *
- * */
-using namespace std;
-
-/**
  *	TODO Proposta: caminho como entrada da função
+ *
+ *	@return nome da projeção gerada, ou "" caso a relação de entrada seja inválida
  * */
 string escreverProjecao(string relacao, int qtdAtributos, string listaAtributos, string nomeProjecao){
-	ofstream arquivo;
-	arquivo.open("etc/Operacao.alg", fstream::app);
+	if(relacao.empty()) return "";
+
+	fstream arquivo;
+	abrir(arquivo, "etc/Operacao.alg", fstream::app);
 
 	arquivo << "P(" << relacao << "," << qtdAtributos << "," << listaAtributos << "," << nomeProjecao << ")\n";
 
@@ -79,8 +97,8 @@ string escreverProjecao(string relacao, int qtdAtributos, string listaAtributos,
  *	TODO Proposta: caminho como entrada da função
  * */
 string escreverSelecao(string relacao, string atr, string op, string valor, string nomeSelecao){
-	ofstream arquivo;
-	arquivo.open("etc/Operacao.alg", ofstream::app);
+	fstream arquivo;
+	abrir(arquivo, "etc/Operacao.alg", fstream::app);
 	arquivo << "S(" << relacao << "," << atr << "," << op << "," << valor << ", " << nomeSelecao << ")\n";
 	arquivo.close();
 
@@ -91,8 +109,8 @@ string escreverSelecao(string relacao, string atr, string op, string valor, stri
  *	TODO Proposta: caminho como entrada da função
  * */
 string escreverJuncao(string relacao, string relacaoB, string condicao, string nomeJuncao){
-	ofstream arquivo;
-	arquivo.open("etc/Operacao.alg", ofstream::app);
+	fstream arquivo;
+	abrir(arquivo, "etc/Operacao.alg", fstream::app);
 
 	arquivo << "J(" << relacao << "," << relacaoB << "," << condicao << "," << nomeJuncao << ")\n";
 
@@ -130,10 +148,9 @@ void executarProjecao(string linha){
 		   nomeResCtl(nomeResultante + ".ctl"),
 		   nomeResDad(nomeResultante + ".dad");
 
-	ifstream inCtl,//ctl da entrada
-			 inDad;//dad da entrada
-
-	ofstream projCtl,//Ctl da projeção
+	fstream inCtl,//ctl da entrada
+			 inDad,//dad da entrada
+			 projCtl,//Ctl da projeção
 			 projDad;//dad da projeção
 
 	for(int i = 2; i < 2 + tam; i++){
@@ -141,10 +158,10 @@ void executarProjecao(string linha){
 	}
 	
 	// 1. Ler arquivo de catálogo
-	inCtl.open(nomeCatalogo.c_str());
+	abrir(inCtl, nomeCatalogo.c_str());
 
 	// 2. Criar arquivo de catálogo final
-	projCtl.open(nomeResCtl.c_str());
+	abrir(projCtl, nomeCatalogo.c_str(), fstream::out);
 
 	inCtl >> inAtr;
 	
@@ -182,9 +199,9 @@ void executarProjecao(string linha){
     }
 
 	// 3. Escrever arquivo Dad da projeção
-	projDad.open(nomeResDad.c_str());
+	abrir(projDad, nomeResDad.c_str());
 	// Iterar sobre os índices no mapa, só obtendo do DAD da relação aqueles valores dos índices passados
-	inDad.open(nomeDados.c_str());
+	abrir(inDad, nomeDados.c_str());
 
 	//linha com os valores da i-ésima tupla
 	string inVal;
@@ -270,10 +287,9 @@ void executarSelecao(string linha){
 		   selNomeCtl(nomeFinal + ".ctl"),
 		   selNomeDad(nomeFinal + ".dad");
 
-	ifstream inCtl,
-			inDad;
-
-	ofstream selCtl,
+	fstream inCtl,
+			inDad,
+			selCtl,
 			selDad;
 
 	int inGrau,
@@ -285,16 +301,16 @@ void executarSelecao(string linha){
 		   inVal,
 		   selTipo;
 
-	inCtl.open(nomeCatalogo.c_str(), fstream::in);
-	inDad.open(nomeDados.c_str(), fstream::in);
+	abrir(inCtl, nomeCatalogo.c_str());
+	abrir(inDad, nomeDados.c_str());
 
 	inCtl >> inAtr;
 
 	assert(2 == scanf(inAtr.c_str(), "%d,%d\n", &inGrau, &inCard) 
 			&& "Erro na leitura da cardinalidade e grau.\n");
 
-	selCtl.open(selNomeCtl.c_str());
-	selDad.open(selNomeDad.c_str());
+	abrir(selCtl, selNomeCtl.c_str(), fstream::out);
+	abrir(selDad, selNomeDad.c_str(), fstream::out);
 
 	vector<string> inMods;
 
@@ -352,19 +368,10 @@ void executarJuncao(string linha){
 	// TODO: escrever execucao em arquivo e na tela
 }
 
-void abrir(fstream arquivo, const char* caminho, ios_base::openmode mode = fstream::in, 
-		string msg = "Erro abrindo o arquivo: "){
-	arquivo.open(caminho, mode);
-	if ( (arquivo.rdstate() & std::ifstream::failbit ) != 0 )
-		    std::cerr << msg << caminho << endl;
-}
 
 void parse(){
-	ifstream arquivo;
-	arquivo.open("etc/Operacao.alg");
-	if ( (arquivo.rdstate() & std::ifstream::failbit ) != 0 )
-		    std::cerr << "Erro abrindo o arquivo de Operacoes Algebricas.\n";
-
+	fstream arquivo;
+	abrir(arquivo, "etc/Operacao.alg");
 	string linha;
 	
 	while(arquivo >> linha){

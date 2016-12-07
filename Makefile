@@ -13,4 +13,4 @@ select: $(CPPSRCS)
 all: select
 
 clean:
-	rm -f select
+	rm -f bin/select etc/Operacao.alg

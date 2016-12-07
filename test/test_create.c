@@ -8,11 +8,7 @@
 
 #include "ufftest.h"
 
-#include "no.h"
-#include "ref.h"
-#include "cod.h"
-#include "heap.h"
-#include "huffman.h"
+#include "../src/createTable.c"
 
 void before()
 {

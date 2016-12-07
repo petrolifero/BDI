@@ -365,9 +365,27 @@ void executarJuncao(string linha){
 		   cond(dados[2]),
 		   nomef(dados[3]);
 
-	// TODO: escrever execucao em arquivo e na tela
-}
+	fstream inCtlA,
+			inDadA,
+			inCtlB,
+			inDadB,
+			junCtl,
+			junDad;
 
+	inCtlA.abrir(
+	inDadA.abrir(
+	inCtlB.abrir
+	inDadB.abrir
+	junCtl.abrir
+	junDad.abrir
+
+	inCtlA.close();
+	inDadA.close();
+	inCtlB.close();
+	inDadB.close();
+	junCtl.close();
+	junDad.close();
+}
 
 void parse(){
 	fstream arquivo;

@@ -1,5 +1,6 @@
 #include <stdio.h>
-#include "select.h"
+#include "select.cpp"
+#include "createTable.c"
 
 int main(int argc, char* argv[])
 {
@@ -26,7 +27,7 @@ int main(int argc, char* argv[])
   switch(initial)
   {
     case 'S':
-      select(fp);
+      sql_select(fp);
       break;
     case 'I':
       insert(fp);

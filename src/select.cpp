@@ -1,12 +1,9 @@
 #include <stdio.h>
-#include <algorithm>
 #include <cassert>
-#include <stdlib.h>
 #include <fstream>
 #include <iterator>
 #include <errno.h>
 #include "algebrista.cpp"
-#include "select.h"
 
 using namespace boost;
 using namespace std;
@@ -20,7 +17,7 @@ void identificarComando(string &comando);
 // Função de interface com código em C
 // obtém comando do arquivo, e passa para o manipulador do select
 // PRE: arquivo está posicionado num SELECT
-void select(FILE *ponteiroArquivo){
+extern "C" void sql_select(FILE *ponteiroArquivo){
 	assert(ponteiroArquivo != NULL && "Por favor especifique um arquivo SQL existente.");
 	
 	int rc = 0;
@@ -198,7 +195,7 @@ void identificarComando(string &comando){
 
 }
 
-int main(int argc, char **argv){
+/*int main(int argc, char **argv){
 	FILE *arq = fopen(argv[1], "r");
 	select(arq);
 	select(arq);
@@ -209,4 +206,4 @@ int main(int argc, char **argv){
 	parse();
 
 	fclose(arq);
-}
+}*/

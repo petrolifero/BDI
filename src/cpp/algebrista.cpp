@@ -42,6 +42,39 @@ vector<string> split(const string &s, char delim) {
     return elems;
 }
 
+string parseAtr(string where){
+	size_t found = where.find_first_of("=<>");	
+
+	return where.substr(0, found);
+}
+
+string parseFirstAtrInTab(string where){
+	size_t found = where.find_first_of(".");
+
+	return parseAtr(where.substr(found));
+}
+
+string parseLastAtrInTab(string where){
+	size_t found = where.find_last_of(".");
+
+	return where.substr(found);
+}
+
+string parseOp(string where){
+	size_t last = where.find_last_of("=<>"),
+		   first = where.find_first_of("=<>");
+
+	string t(1, where.at(last));
+
+	return ( first == last ) ?  t : where.substr(first, last - first);
+}
+
+string parseVal(string where){
+	size_t found = where.find_last_of("=<>");	
+
+	return where.substr(found + 1, where.length());
+}
+
 /**
  *	Remoção de espaços consecutivos
  * */
@@ -362,7 +395,6 @@ void executarJuncao(string linha){
 
 	string nomeTabA(parametros[0]),
 		   nomeTabB(parametros[1]),
-		   // TODO: fazer o parse da condição: <atr>=<atr> ou <tab1>.<atr> = <tab2>.<atr>
 		   cond(parametros[2]),
 		   nomef(parametros[3]),
 
@@ -373,6 +405,10 @@ void executarJuncao(string linha){
 
 		   nomeCtlJun = nomef + ".ctl",
 		   nomeDadJun = nomef + ".dad";
+
+	string nomeAtrA = parseFirstAtrInTab(cond), 
+		   operador = parseOp(cond),
+		   nomeAtrB = parseLastAtrInTab(cond);
 
 	fstream inCtlA,
 			inDadA,
@@ -386,7 +422,9 @@ void executarJuncao(string linha){
 		grauJ,
 		cardA,
 		cardB,
-		cardJ;
+		cardJ,
+		indA,
+		indB;
 
 	abrir(inCtlA, nomeCtlA.c_str(), fstream::in, "Falha na abertura do 1º Arquivo de Catálogo: \n");
 	abrir(inDadA, nomeDadA.c_str(), fstream::in, "Falha na abertura do 2º Arquivo de Dados: \n");
@@ -397,10 +435,73 @@ void executarJuncao(string linha){
 	abrir(junDad, nomeDadJun.c_str(), fstream::out, "Falha na criação do Arquivo de dados: \n");
 
 	// TODO: Ler ctl's, descobrir colunas de verificação da condição
-	string linhaCtl;
-	// TODO: Juntar ctl's
-	// TODO: Juntar dad's
-	// TODO: Escrever na tela
+	
+	string linhaCtlA, 
+		   linhaCtlB;
+
+	inCtlA >> linhaCtlA;
+
+	assert(2 == scanf(linhaCtlA.c_str(), "%d,%d\n", &grauA, &cardA) 
+			&& "Erro na leitura da cardinalidade e grau.\n");
+
+	inCtlB >> linhaCtlB;
+
+	assert(2 == scanf(linhaCtlB.c_str(), "%d,%d\n", &grauB, &cardB) 
+			&& "Erro na leitura da cardinalidade e grau.\n");
+
+	grauJ = grauA + grauB;
+	cardJ = (cardA > cardB) ? cardA : cardB;
+
+	junCtl << grauJ << "," << cardJ << endl;
+
+	vector<string> mods;
+	for(int i = 0; i < grauA; i++){
+		inCtlA >> linhaCtlA;
+
+		junCtl << linhaCtlA;
+		mods = split(linhaCtlA, ',');
+
+		if(mods[0] == nomeAtrA){
+			indA = i;
+			// achei o atributo que regerá a junção
+		}
+	}
+
+	for(int i = 0; i < grauB; i++){
+		inCtlB >> linhaCtlB;
+
+		junCtl << linhaCtlB;
+		mods = split(linhaCtlB, ',');
+
+		if(mods[0] == nomeAtrB){
+			indB = i;
+			// achei o atributo que regerá a junção
+		}
+	}
+
+	vector<string> colunasA, colunasB;
+	string linhaA, linhaB;
+
+	bool lerA, lerB;
+
+	for(int i = 0; i < cardJ; i++){
+		if(lerA){
+			inDadA >> linhaA;
+			colunasA = split(linhaA, ' ');
+		} else {
+			
+		}
+		
+		if(lerB) {
+			inDadB >> linhaB;
+			colunasB = split(linhaB, ' ');
+		} else {
+		
+		}
+
+
+
+	}
 
 	inCtlA.close();
 	inDadA.close();

@@ -35,27 +35,6 @@ extern "C" void sql_select(FILE *ponteiroArquivo){
 	free(linha);
 }
 
-string parseAtr(string where){
-	size_t found = where.find_first_of("=<>");	
-
-	return where.substr(0, found);
-}
-
-string parseOp(string where){
-	size_t last = where.find_last_of("=<>"),
-		   first = where.find_first_of("=<>");
-
-	string t(1, where.at(last));
-
-	return ( first == last ) ?  t : where.substr(first, last - first);
-}
-
-string parseVal(string where){
-	size_t found = where.find_last_of("=<>");	
-
-	return where.substr(found + 1, where.length());
-}
-
 /**
  *	Função de parsing do comando passado.
  *
@@ -195,15 +174,15 @@ void identificarComando(string &comando){
 
 }
 
-/*int main(int argc, char **argv){
+int main(int argc, char **argv){
 	FILE *arq = fopen(argv[1], "r");
-	select(arq);
-	select(arq);
-	select(arq);
-	select(arq);
-	select(arq);
+	sql_select(arq);
+	sql_select(arq);
+	sql_select(arq);
+	sql_select(arq);
+	sql_select(arq);
 
 	parse();
 
 	fclose(arq);
-}*/
+}

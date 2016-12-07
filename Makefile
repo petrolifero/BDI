@@ -6,35 +6,11 @@ CSRCS=$(wildcard src/*.c)
 CPPSRCS=$(wildcard src/*.cpp)
 LDFLAGS= -lm -lstdc++
 
-bduff: main.o select.o algebrista.o createTable.o
-	$(CPP) $(LDFLAGS) -o $@ $^
-
-main.o: src/main.c
-	$(CPP) -g -o $@ -c $<
-
-select.o: src/select.cpp
+select: $(CPPSRCS)
 	@mkdir -p bin
-	$(CPP) $(CPPFLAGS) -o $@ -c $<
+	$(CPP) $(CPPFLAGS) $< -o bin/$@
 
-algebrista.o: src/algebrista.cpp
-	@mkdir -p bin
-	$(CPP) $(CPPFLAGS) -o $@ -c $<
-
-createTable.o: src/createTable.c
-	$(CC) $(CFLAGS) -o $@ -c $<
-
-#select: algebra.o select.o
-#	@mkdir -p bin
-#	$(CP) $(CPPFLAGS) -c $< -o $@
-
-#insert: $(CSRCS)
-#	@mkdir -p bin
-#	$(CC) $(CFLAGS) -c $< -o bin/bduff
-
-#bduff: select $(CSRCS)
-#	$(CC) $(CFLAGS) src/main.c -o bin/bduff
-##
-all: bduff 
+all: select
 
 clean:
 	rm -f bin/* etc/Operacao.alg

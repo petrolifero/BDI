@@ -47,35 +47,56 @@ LinkedList* readAtributes(FILE* sql)
     fscanf(sql,"%s %[^, )]", aux->t.nameAtribute, type);
     for(i=0; i<strlen(aux->t.nameAtribute); i++)
     {
-        aux->t.nameAtribute[i]=toupper((int)aux->t.nameAtribute[i]);
+        aux->t.nameAtribute[i]=toupper(aux->t.nameAtribute[i]);
     }
     aux->t.type=toupper(type[0])=='S'?STRING:INT;
-    fscanf(sql,"%[^,)]%c",receive,&final);
+	fscanf(sql,"%[^,)]%c",receive,&final);
+	if(aux->t.nameAtribute[0]=='L')
+		fprintf(stderr, "%d %s %c\n", __LINE__, receive, final);
+	if(strlen(receive)==0)
+	{
+			char c=0;
+			fscanf(sql,"%c", &c);
+			if(c==')')
+			{
+				aux->prox=NULL;
+				return aux;
+			}
+	}
+	if(receive[0]==' ')
+	{
+			int i;
+			int len=strlen(receive);
+			for(i=1; i<len; i++)
+			{
+					receive[i-1]=receive[i];
+			}
+	}
     for(i=0; i<strlen(receive); i++)
     {
-	receive[i]=toupper(receive[i]);
+		receive[i]=toupper(receive[i]);
     }
-    aux->t.notNull=strstr(receive,"NN")==NULL;
-    aux->t.key=strstr(receive,"KEY")==NULL;
-    aux->t.ord=strstr(receive,"ORD")==NULL;
+    aux->t.notNull=strstr(receive,"NN")!=NULL;
+    aux->t.key=strstr(receive,"KEY")!=NULL;
+    aux->t.ord=strstr(receive,"ORD")!=NULL;
     if(final==')')
     {
-	aux->prox=NULL;
+		aux->prox=NULL;
     }
     else
     {
         char a;
-	next:
-	fscanf(sql,"%c", &a);
-	if(a!=' ')
-	{
-		fseek(sql,-1,SEEK_CUR);
-		aux->prox=readAtributes(sql);
-	}
-        else
-	{
-		goto next;
-	}
+		next:
+		fscanf(sql,"%c", &a);
+		if(a!=' ')
+		{
+			fseek(sql,-1,SEEK_CUR);
+			aux->prox=readAtributes(sql);
+		}
+    	else
+		{
+			goto next;
+		}
     }
     return aux;
 }
@@ -156,11 +177,16 @@ void sql_createTable(FILE* sql)
     FILE* ctl;
     LinkedList *atributes;
     LinkedList *aux;
+	int i;
     nameTable=(char*)calloc(sizeof(char),501); //prepare to table name up to 500
     nameFile=(char*)calloc(sizeof(char), 504); //table name + ".ctl"
     rewind(sql);
-    fscanf(sql,"%*13s"); /*ignore "CREATE TABLE "*/
-    fscanf(sql,"%s( ", nameTable); /*ignore the '(' and the space*/
+//    fscanf(sql,"%*13[^ ]"); /*ignore "CREATE TABLE "*/
+	for(i=0; i<13; i++)
+	{
+			fscanf(sql,"%*c");
+	}
+    fscanf(sql,"%[^(]( ", nameTable); /*ignore the '(' and the space*/
     strcpy(nameFile,nameTable);
     strcat(nameFile,".ctl");
     ctl=fopen(nameFile, "r");
@@ -169,12 +195,14 @@ void sql_createTable(FILE* sql)
         fclose(ctl);
         free(nameFile);
         free(nameTable);
+		return;
     }
     ctl=fopen(nameFile, "w");
     if(!ctl)
     {
         free(nameFile);
         free(nameTable);
+		return;
     }
     atributes=readAtributes(sql);
     if(howMuchKeys(atributes) != 1)
@@ -223,4 +251,22 @@ void sql_createTable(FILE* sql)
     }
     freeList(atributes);
     fclose(ctl);
+}
+
+int main(int arc, char* arv[])
+{
+	FILE* fp;
+	if(arc!=2) 
+	{
+			fprintf(stderr,"FORMAT : %s file\n", arv[0]);
+			return 1;
+	}
+	fp=fopen(arv[1], "r");
+	if(!fp)
+	{
+		fprintf(stderr,"ERRO NA ABERTURA DO ARQUIVO\n");
+		return 2;
+	}
+	sql_createTable(fp);
+	return 0;
 }

@@ -1,0 +1,3 @@
+SELECT nome,tipo,tel
+	FROM (A JOIN B ON A.x=B.x)
+	WHERE nome='marcelo';

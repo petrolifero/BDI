@@ -2,6 +2,7 @@
 //#include "select.cpp"
 #include "createTable.c"
 //#include "insert.c"
+//#include "insert.c"
 
 int main(int argc, char* argv[])
 {

@@ -44,6 +44,39 @@ vector<string> split(const string &s, char delim) {
     return elems;
 }
 
+string parseAtr(string where){
+	size_t found = where.find_first_of("=<>");	
+
+	return where.substr(0, found);
+}
+
+string parseFirstAtrInTab(string where){
+	size_t found = where.find_first_of(".");
+
+	return parseAtr(where.substr(found));
+}
+
+string parseLastAtrInTab(string where){
+	size_t found = where.find_last_of(".");
+
+	return where.substr(found);
+}
+
+string parseOp(string where){
+	size_t last = where.find_last_of("=<>"),
+		   first = where.find_first_of("=<>");
+
+	string t(1, where.at(last));
+
+	return ( first == last ) ?  t : where.substr(first, last - first);
+}
+
+string parseVal(string where){
+	size_t found = where.find_last_of("=<>");	
+
+	return where.substr(found + 1, where.length());
+}
+
 /**
  *	Remoção de espaços consecutivos
  * */
@@ -360,21 +393,42 @@ void executarSelecao(string linha){
 
 void executarJuncao(string linha){
 
+	/*
+	 *	Algoritmo de junção:
+	 *
+	 *	abrir arquivos 1 e 2
+	 *	identificar atributo sendo usado como critério de junção
+	 *	verificar se atributo está ordenado ou não
+	 *	se não está ordenado,
+	 *		ordenar linhas
+	 * 	andar com iteradores sobre as linhas de cada tabela
+	 * 		se tupla na 1ª e tupla na 2ª satisfazem critério,
+	 * 			junção da tupla na 1ª com a tupla na 2º entra na tabela final
+	 * 	fechar arquivo de junção
+	 * 	fechar arquivos 1 e 2
+	 *
+	 */
+
 	vector<string> parametros = separarParametros(linha);
 
 	string nomeTabA(parametros[0]),
 		   nomeTabB(parametros[1]),
-		   // TODO: fazer o parse da condição: <atr>=<atr> ou <tab1>.<atr> = <tab2>.<atr>
 		   cond(parametros[2]),
 		   nomef(parametros[3]),
 
 		   nomeCtlA = nomeTabA + ".ctl",
 		   nomeDadA = nomeTabA + ".dad",
+
 		   nomeCtlB = nomeTabB + ".ctl",
 		   nomeDadB = nomeTabB + ".dad",
 
 		   nomeCtlJun = nomef + ".ctl",
 		   nomeDadJun = nomef + ".dad";
+
+	//Acomodar possibilidade de haver ou não o "."
+	string nomeAtrA = parseFirstAtrInTab(cond), 
+		   operador = parseOp(cond),
+		   nomeAtrB = parseLastAtrInTab(cond);
 
 	fstream inCtlA,
 			inDadA,
@@ -388,21 +442,108 @@ void executarJuncao(string linha){
 		grauJ,
 		cardA,
 		cardB,
-		cardJ;
+		cardJ,
+		indA,
+		indB;
 
-	abrir(inCtlA, nomeCtlA.c_str(), fstream::in, "Falha na abertura do 1º Arquivo de Catálogo: \n");
-	abrir(inDadA, nomeDadA.c_str(), fstream::in, "Falha na abertura do 2º Arquivo de Dados: \n");
-	abrir(inCtlB, nomeCtlB.c_str(), fstream::in, "Falha na abertura do 1º Arquivo de Catálogo: \n");
-	abrir(inDadB, nomeDadB.c_str(), fstream::in, "Falha na abertura do 2º Arquivo de Dados: \n");
+	abrir(inCtlA, nomeCtlA.c_str(), fstream::in, 
+			"Falha na abertura do 1º Arquivo de Catálogo: \n");
+	abrir(inDadA, nomeDadA.c_str(), fstream::in, 
+			"Falha na abertura do 2º Arquivo de Dados: \n");
 
-	abrir(junCtl, nomeCtlJun.c_str(), fstream::out, "Falha na criação do Arquivo de Catálogo: \n");
-	abrir(junDad, nomeDadJun.c_str(), fstream::out, "Falha na criação do Arquivo de dados: \n");
+	abrir(inCtlB, nomeCtlB.c_str(), fstream::in, 
+			"Falha na abertura do 1º Arquivo de Catálogo: \n");
+	abrir(inDadB, nomeDadB.c_str(), fstream::in, 
+			"Falha na abertura do 2º Arquivo de Dados: \n");
 
-	// TODO: Ler ctl's, descobrir colunas de verificação da condição
-	string linhaCtl;
-	// TODO: Juntar ctl's
-	// TODO: Juntar dad's
-	// TODO: Escrever na tela
+	abrir(junCtl, nomeCtlJun.c_str(), fstream::out, 
+			"Falha na criação do Arquivo de Catálogo: \n");
+	abrir(junDad, nomeDadJun.c_str(), fstream::out, 
+			"Falha na criação do Arquivo de dados: \n");
+
+	
+	string linhaCtlA, 
+		   linhaCtlB;
+
+	//Leitura da Linha com grau e cardinalidade
+	inCtlA >> linhaCtlA;
+
+	assert(2 == scanf(linhaCtlA.c_str(), "%d,%d\n", &grauA, &cardA) 
+			&& "Erro na leitura da cardinalidade e grau.\n");
+
+	inCtlB >> linhaCtlB;
+
+	assert(2 == scanf(linhaCtlB.c_str(), "%d,%d\n", &grauB, &cardB) 
+			&& "Erro na leitura da cardinalidade e grau.\n");
+
+	grauJ = grauA + grauB;
+	//cardJ = (cardA > cardB) ? cardA : cardB;
+	//TODO: determinar cardinalidade da junção
+
+	junCtl << grauJ << "," << cardJ << endl;
+
+	//modificadores nas tabelas de ctl
+	vector<string> mods;
+	for(int i = 0; i < grauA; i++){
+		inCtlA >> linhaCtlA;
+
+		mods = split(linhaCtlA, ',');
+
+		if(mods[0] == nomeAtrA){
+			indA = i;
+			// TODO: verificar se há ordenação
+			// achei o atributo que regerá a junção
+		}
+	}
+
+	for(int i = 0; i < grauB; i++){
+		inCtlB >> linhaCtlB;
+
+		mods = split(linhaCtlB, ',');
+
+		if(mods[0] == nomeAtrB){
+			indB = i;
+			// TODO: verificar se há ordenação
+			// achei o atributo que regerá a junção
+		}
+	}
+
+	// TODO: ordenar tabelas não ordenadas
+	
+	// TODO: trabalhar em iteradores, e não em linhas
+
+	vector<string> linhasA, linhasB;
+	string linhaA, linhaB;
+
+	for(int i = 0; i < cardA; i++){
+		inDadA >> linhaA;
+		linhasA.push_back(linhaA);
+	}
+
+	for(int i = 0; i < cardB; i++){
+		inDadB >> linhaB;
+		linhasB.push_back(linhaB);
+	}
+
+	vector<string>::iterator itArqA = linhasA.begin(),
+							 itArqB = linhasB.begin();
+
+	vector<string> valoresA, 
+				   valoresB;
+
+	while(itArqA != linhasA.end() 
+			&& itArqB != linhasB.end()){
+
+		valoresA = split(*itArqA, ' ');
+		valoresB = split(*itArqB, ' ');
+
+		if(_satisfaz()){
+			junDad << *itArqA << *itArqB
+		}
+
+		// TODO: aplicar lógica de junção
+	}
+
 
 	inCtlA.close();
 	inDadA.close();

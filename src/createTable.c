@@ -211,13 +211,18 @@ void sql_createTable(FILE* sql)
         free(nameFile);
         free(nameTable);
         fclose(ctl);
+		return;
     }
     if(howMuchOrd(atributes) != 1)
     {
+		fprintf(stderr,"%d %d\n", __LINE__, howMuchOrd(atributes));	
         freeList(atributes);
+		fprintf(stderr,"%d Depois de liberar a lista\n", __LINE__); 
         free(nameFile);
         free(nameTable);
         fclose(ctl);
+		fprintf(stderr,"%d Liberei o arquivo\n", __LINE__);
+		return;
     }
     if(keyOrOrdButNULL(atributes))
     {
@@ -225,6 +230,7 @@ void sql_createTable(FILE* sql)
         free(nameFile);
         free(nameTable);
         fclose(ctl);
+		return;
     }
     strcpy(nameFile, nameTable);
     strcat(nameFile, ".dad");

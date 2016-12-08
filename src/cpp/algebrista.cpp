@@ -459,7 +459,6 @@ void executarJuncao(string linha){
 	abrir(junDad, nomeDadJun.c_str(), fstream::out, 
 			"Falha na criação do Arquivo de dados: \n");
 
-	// TODO: Ler ctl's, descobrir colunas de verificação da condição
 	
 	string linhaCtlA, 
 		   linhaCtlB;
@@ -486,7 +485,6 @@ void executarJuncao(string linha){
 	for(int i = 0; i < grauA; i++){
 		inCtlA >> linhaCtlA;
 
-		junCtl << linhaCtlA;
 		mods = split(linhaCtlA, ',');
 
 		if(mods[0] == nomeAtrA){
@@ -499,7 +497,6 @@ void executarJuncao(string linha){
 	for(int i = 0; i < grauB; i++){
 		inCtlB >> linhaCtlB;
 
-		junCtl << linhaCtlB;
 		mods = split(linhaCtlB, ',');
 
 		if(mods[0] == nomeAtrB){
@@ -514,13 +511,37 @@ void executarJuncao(string linha){
 	// TODO: trabalhar em iteradores, e não em linhas
 
 	vector<string> linhasA, linhasB;
+	string linhaA, linhaB;
+
+	for(int i = 0; i < cardA; i++){
+		inDadA >> linhaA;
+		linhasA.push_back(linhaA);
+	}
+
+	for(int i = 0; i < cardB; i++){
+		inDadB >> linhaB;
+		linhasB.push_back(linhaB);
+	}
+
 	vector<string>::iterator itArqA = linhasA.begin(),
 							 itArqB = linhasB.begin();
 
+	vector<string> valoresA, 
+				   valoresB;
+
 	while(itArqA != linhasA.end() 
-			&& itArqB != linhasB.end()){	
+			&& itArqB != linhasB.end()){
+
+		valoresA = split(*itArqA, ' ');
+		valoresB = split(*itArqB, ' ');
+
+		if(_satisfaz()){
+			junDad << *itArqA << *itArqB
+		}
+
 		// TODO: aplicar lógica de junção
 	}
+
 
 	inCtlA.close();
 	inDadA.close();

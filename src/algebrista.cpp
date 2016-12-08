@@ -11,6 +11,8 @@
 using namespace std;
 using namespace boost;
 
+namespace alebra{
+
 /**
  *	Separação de Strings em vetores
  */
@@ -432,4 +434,6 @@ void parse(){
 	}
 
 	arquivo.close();
+}
+
 }

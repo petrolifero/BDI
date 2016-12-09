@@ -48,16 +48,28 @@ string parseAtr(string where){
 	return where.substr(0, found);
 }
 
+string parseVal(string where){
+	size_t found = where.find_last_of("=<>");	
+
+	return where.substr(found + 1, where.length());
+}
+
+/**
+ *	PRE: primeiro atributo pertence à primeira tabela
+ * */
 string parseFirstAtrInTab(string where){
 	size_t found = where.find_first_of(".");
 
-	return parseAtr(where.substr(found));
+	return parseAtr((found != string::npos) ? where.substr(found) : where);
 }
 
+/**
+ *	PRE: ultimo atributo pertence à 2ª tabela
+ * */
 string parseLastAtrInTab(string where){
 	size_t found = where.find_last_of(".");
 
-	return where.substr(found);
+	return (found != string::npos) ? where.substr(found) : parseVal(where);
 }
 
 string parseOp(string where){
@@ -69,11 +81,6 @@ string parseOp(string where){
 	return ( first == last ) ?  t : where.substr(first, last - first);
 }
 
-string parseVal(string where){
-	size_t found = where.find_last_of("=<>");	
-
-	return where.substr(found + 1, where.length());
-}
 
 /**
  *	Remoção de espaços consecutivos
@@ -389,6 +396,9 @@ void executarSelecao(string linha){
 	selDad.close();
 }
 
+/*
+ *	TODO Verificar se atributos da condição tem o mesmo nome, e renomeá-los caso isto aconteça;
+ * */
 void executarJuncao(string linha){
 
 	/*
@@ -423,7 +433,6 @@ void executarJuncao(string linha){
 		   nomeCtlJun = nomef + ".ctl",
 		   nomeDadJun = nomef + ".dad";
 
-	//Acomodar possibilidade de haver ou não o "."
 	string nomeAtrA = parseFirstAtrInTab(cond), 
 		   operador = parseOp(cond),
 		   nomeAtrB = parseLastAtrInTab(cond);
@@ -440,7 +449,7 @@ void executarJuncao(string linha){
 		grauJ,
 		cardA,
 		cardB,
-		cardJ,
+		cardJ = 0,
 		indA,
 		indB;
 
@@ -474,14 +483,9 @@ void executarJuncao(string linha){
 	assert(2 == scanf(linhaCtlB.c_str(), "%d,%d\n", &grauB, &cardB) 
 			&& "Erro na leitura da cardinalidade e grau.\n");
 
-	grauJ = grauA + grauB;
-	//cardJ = (cardA > cardB) ? cardA : cardB;
-	//TODO: determinar cardinalidade da junção
-
-	junCtl << grauJ << "," << cardJ << endl;
-
 	//modificadores nas tabelas de ctl
 	vector<string> mods;
+	string tipoAtr;
 	for(int i = 0; i < grauA; i++){
 		inCtlA >> linhaCtlA;
 
@@ -489,6 +493,8 @@ void executarJuncao(string linha){
 
 		if(mods[0] == nomeAtrA){
 			indA = i;
+			tipoAtr = mods[1];
+
 			// TODO: verificar se há ordenação
 			// achei o atributo que regerá a junção
 		}
@@ -501,6 +507,7 @@ void executarJuncao(string linha){
 
 		if(mods[0] == nomeAtrB){
 			indB = i;
+
 			// TODO: verificar se há ordenação
 			// achei o atributo que regerá a junção
 		}
@@ -535,13 +542,27 @@ void executarJuncao(string linha){
 		valoresA = split(*itArqA, ' ');
 		valoresB = split(*itArqB, ' ');
 
-		if(_satisfaz()){
-			junDad << *itArqA << *itArqB
+		if(_satisfaz(valoresA[indA], tipoAtr, operador, valoresB[indB])){
+			junDad << *itArqA << " " << *itArqB;
+			cardJ++;
 		}
-
-		// TODO: aplicar lógica de junção
 	}
 
+	grauJ = grauA + grauB;
+
+	junCtl << grauJ << "," << cardJ << endl;
+
+	// TODO: zerar arquivos;
+	
+	for(int i = 0; i < cardJ; i++){
+		if(i < cardA){
+			inDadA >> linhaA;
+			junCtl << linhaA;
+		} else {
+			inDadB >> linhaB;
+			junCtl << linhaB;
+		}
+	}
 
 	inCtlA.close();
 	inDadA.close();

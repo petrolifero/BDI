@@ -1,17 +1,14 @@
 #include <stdio.h>
 //#include "select.cpp"
 #include "createTable.c"
-<<<<<<< HEAD
 //#include "insert.c"
-=======
-#include "insert.c"
->>>>>>> 1f4e7d7e8978aa72cbf74b6b559ffc6a3e0ea3cb
+//#include "insert.c"
 
 int main(int argc, char* argv[])
 {
   FILE *fp;
   char initial;
-  fp=fopen(argv[1], "r");
+  fp=fopen(argv[1], "r+");
   if(!fp)
   {
     fprintf(stderr, "ERROR ON OPENING SQL FILE\n");
@@ -33,10 +30,10 @@ int main(int argc, char* argv[])
   switch(initial)
   {
     case 'S':
-      sql_select(fp);
+//      sql_select(fp);
       break;
     case 'I':
-      sql_insert(fp);
+ //     sql_insert(fp);
       break;
     case 'C':
       sql_createTable(fp);

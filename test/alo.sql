@@ -1,0 +1,1 @@
+CREATE TABLE oi( id INT,key ) 

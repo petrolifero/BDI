@@ -7,6 +7,7 @@
 
 using namespace boost;
 using namespace std;
+using namespace alebra;
 
 void identificarComando(string &comando);
 
@@ -46,10 +47,10 @@ void identificarComando(string &comando){
 		return;
 	}
 	
-	limpar(comando);
+	alebra::limpar(comando);
 
 	//Lista de cláusulas
-	vector<string> clausulas(split(comando, ' '));
+	vector<string> clausulas(alebra::split(comando, ' '));
 	
 	//Estado inicial: lendo SELECT
 	int estado = 0;
@@ -94,7 +95,7 @@ void identificarComando(string &comando){
 					//fim: projeção na relacao, com os atributos
 					erase_all(relacao, ";");
 
-					escreverProjecao(relacao, count(atributos.begin(), atributos.end(), ',') + 1 , 
+					alebra::escreverProjecao(relacao, count(atributos.begin(), atributos.end(), ',') + 1 , 
 							atributos, relacao + "_P_" + atributos);
 
 					estado = 99;
@@ -112,7 +113,7 @@ void identificarComando(string &comando){
 				
 				selecao = escreverSelecao(relacao, parseAtr(where), parseOp(where), 
 						parseVal(where), relacao + "_S_" + where);
-				escreverProjecao(selecao, count(atributos.begin(), atributos.end(), ',') + 1,
+				alebra::escreverProjecao(selecao, count(atributos.begin(), atributos.end(), ',') + 1,
 						atributos, selecao + "_P_" + atributos);
 
 				estado = 99;
@@ -147,7 +148,7 @@ void identificarComando(string &comando){
 
 				juncao = escreverJuncao(relacao, relacaoB, condicao, 
 						relacao + "_J_" + condicao + "_" + relacaoB);
-				escreverProjecao(juncao, count(atributos.begin(), atributos.end(), ',') + 1,
+				alebra::escreverProjecao(juncao, count(atributos.begin(), atributos.end(), ',') + 1,
 						atributos, juncao + "_P_" + atributos);
 
 				estado = 99;

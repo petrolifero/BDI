@@ -1,2 +1,0 @@
-S(A,nome,=,'marcelo',A_S)
-P(A_S,2,nome,tel,A_S_P_nome-tel)

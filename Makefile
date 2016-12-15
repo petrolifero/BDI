@@ -19,4 +19,4 @@ select: $(CPPSRCS)
 all: select
 
 clean:
-	rm -f bin/* ctl/*_* dad/*_* temp/*
+	rm -f bin/* bin/.fuse* ctl/*_* dad/*_* temp/*

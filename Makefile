@@ -8,15 +8,15 @@ CPPSRCS=$(wildcard src/cpp/*.cpp)
 select: $(CPPSRCS)
 	@mkdir -p bin
 	$(CPP) $(CPPFLAGS) $< -o bin/$@
-	./bin/select etc/select1 
-	./bin/select etc/select2
-	./bin/select etc/select3
+	#./bin/select etc/select1
+	#./bin/select etc/select2
+	#./bin/select etc/select3
 	./bin/select etc/select4
-	./bin/select etc/select5
-	./bin/select etc/select6
+#	./bin/select etc/select5
+#	./bin/select etc/select6
 
 
 all: select
 
 clean:
-	rm -f bin/* temp/Operacao.alg
+	rm -f bin/* ctl/*_* dad/*_* temp/*

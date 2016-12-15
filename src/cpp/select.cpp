@@ -111,7 +111,7 @@ void identificarComando(string &comando){
 				erase_all(where, ";");
 				
 				selecao = escreverSelecao(relacao, parseAtr(where), parseOp(where), 
-						parseVal(where), relacao + "_S_" + where);
+						parseVal(where), relacao + "_S");
 				escreverProjecao(selecao, count(atributos.begin(), atributos.end(), ',') + 1,
 						atributos, selecao + "_P_" + atributos);
 
@@ -161,7 +161,7 @@ void identificarComando(string &comando){
 				juncao = escreverJuncao(relacao, relacaoB, condicao,
 						relacao + "_J_" + condicao + "_" + relacaoB);
 				selecao = escreverSelecao(juncao, parseAtr(where), parseOp(where), 
-						parseVal(where), juncao + "_S_" + where);
+						parseVal(where), juncao + "_S");
 				escreverProjecao(selecao, count(atributos.begin(), atributos.end(), ',') + 1, 
 						atributos, selecao + "_P_" + atributos);
 

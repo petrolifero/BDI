@@ -4,8 +4,15 @@
 #include <stdlib.h>
 #include <sstream>
 #include <vector>
+#include <map>
 #include <boost/range/algorithm_ext/erase.hpp>
 #include <boost/algorithm/string.hpp>
+
+#define nome_ctl(a) "ctl/" + a + ".ctl"
+#define nome_dad(a) "dad/" + a + ".dad"
+
+#define temp_ctl(a) "temp/" + a + ".ctl"
+#define temp_dad(a) "temp/" + a + ".dad"
 
 using namespace std;
 using namespace boost;
@@ -70,9 +77,20 @@ vector<string> separarParametros(string linha){
 	}
 
 	size_t inicio = 2;
-	size_t fim = linha.length() - 2;
+	size_t fim = linha.length() - 3;
 
 	string sublinha = linha.substr(inicio, fim);
 
 	return split(sublinha, ',');
 }
+
+struct novalinha : std::ctype<char> {
+  novalinha() : std::ctype<char>(get_table()) {}
+  static mask const* get_table()
+  {
+    static mask rc[table_size];
+    rc['\n'] = std::ctype_base::space;
+    return &rc[0];
+  }
+};
+

@@ -1,4 +1,5 @@
 #include <string>
+#include <algorithm>
 #include <fstream>
 #include "util.cpp"
 
@@ -54,6 +55,7 @@ string escreverProjecao(string relacao, int qtdAtributos, string listaAtributos,
 	fstream arquivo;
 	abrir(arquivo, "temp/Operacao.alg", fstream::app);
 
+	replace(nomeProjecao.begin(), nomeProjecao.end(), ',', '-');
 	arquivo << "P(" << relacao << "," << qtdAtributos << "," << listaAtributos << "," << nomeProjecao << ")\n";
 
 	arquivo.close();
@@ -67,7 +69,7 @@ string escreverProjecao(string relacao, int qtdAtributos, string listaAtributos,
 string escreverSelecao(string relacao, string atr, string op, string valor, string nomeSelecao){
 	fstream arquivo;
 	abrir(arquivo, "temp/Operacao.alg", fstream::app);
-	arquivo << "S(" << relacao << "," << atr << "," << op << "," << valor << ", " << nomeSelecao << ")\n";
+	arquivo << "S(" << relacao << "," << atr << "," << op << "," << valor << "," << nomeSelecao << ")\n";
 	arquivo.close();
 
 	return nomeSelecao;

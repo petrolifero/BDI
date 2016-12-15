@@ -1,0 +1,4 @@
+S(A,nome,=,'marcelo', A_S_nome='marcelo')
+P(A_S_nome='marcelo',2,nome,tel,A_S_nome='marcelo'_P_nome-tel)
+S(A,nome,=,'marcelo', A_S_nome='marcelo')
+P(A_S_nome='marcelo',2,nome,tel,A_S_nome='marcelo'_P_nome-tel)

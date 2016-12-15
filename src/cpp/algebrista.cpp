@@ -5,8 +5,8 @@
 #include <sstream>
 #include <iostream>
 #include <cassert>
-#include "util.cpp"
 #include "parserAlgebrico.cpp"
+#include <stdio.h>
 
 using namespace std;
 using namespace boost;
@@ -22,16 +22,18 @@ void executarProjecao(string linha){
 	// Parâmetros da operação algébrica de projeção
 	vector<string> parametros = separarParametros(linha);
 
+	//std::copy(parametros.begin(), parametros.end(), std::ostream_iterator<string>(std::cout, "\n"));
+
 	// nomes de parâmetros em particular
 	string 	nomeTabela = parametros[0],
-			nomeCatalogo = nomeTabela + ".ctl",
-			nomeDados = nomeTabela + ".dad";
+			nomeCatalogo = nome_ctl(nomeTabela),
+			nomeDados = nome_dad(nomeTabela);
 
 	int tam = atoi(parametros[1].c_str()), // qtd de atrs na projeção
 		inGrau, //grau da relação de entrada
 		inCard, //cardinalidade da relação de entrada
 		projGrau = 0; // grau da projeção
-	
+
 	//atributo da entrada sendo lido no Ctl
 	string inAtr;
 
@@ -40,8 +42,8 @@ void executarProjecao(string linha){
 	
 	//nomes dos arquivos
 	string nomeResultante(parametros[2 + tam]),
-		   nomeResCtl(nomeResultante + ".ctl"),
-		   nomeResDad(nomeResultante + ".dad");
+		   nomeResCtl(nome_ctl(nomeResultante)),
+		   nomeResDad(nome_dad(nomeResultante));
 
 	fstream inCtl,//ctl da entrada
 			 inDad,//dad da entrada
@@ -51,19 +53,19 @@ void executarProjecao(string linha){
 	for(int i = 2; i < 2 + tam; i++){
 		projAtrs.push_back(parametros[i]);
 	}
-	
+
 	// 1. Ler arquivo de catálogo
 	abrir(inCtl, nomeCatalogo.c_str(), fstream::in, "ERRO: Catálogo da tabela inexistente.\n");
 
 	// 2. Criar arquivo de catálogo final
-	abrir(projCtl, nomeCatalogo.c_str(), fstream::out, "ERRO: Problema na criação do arquivo: \n");
+	abrir(projCtl, nomeResCtl.c_str(), fstream::out, "ERRO: Problema na criação do arquivo: \n");
 
 	inCtl >> inAtr;
 	
-	// TODO: testar
-	assert(2 == scanf(inAtr.c_str(), "%d,%d\n", &inGrau, &inCard) 
-			&& "Erro na leitura da cardinalidade e grau.\n");
-	
+	int rc;
+
+	assert(2 == sscanf(inAtr.c_str(), "%d,%d", &inGrau, &inCard) && "Erro na leitura da cardinalidade e grau.\n");
+
 	//Construção do CTL
 	map<int, string> projCtlCols;
 
@@ -83,6 +85,7 @@ void executarProjecao(string linha){
 	}
 
 	projCtl << projGrau << "," << inCard << endl;
+	cout << "\nArquivo CTL da projeção:\n";
 	cout << projGrau << "," << inCard << endl;
 
 	std::map<int, string>::iterator it = projCtlCols.begin();
@@ -101,17 +104,20 @@ void executarProjecao(string linha){
 	//linha com os valores da i-ésima tupla
 	string inVal;
 	vector<string> inVals;
-	
+
+	// TODO: verificar necessidade de colocar isto em "abrir"
+	inDad.imbue(locale(inDad.getloc(), new novalinha));
+	cout << "\nArquivo DAD da projeção:\n";
+
 	for(int i = 0; i < inCard; i++){
 		inDad >> inVal;
-		inVals = split(inVal, ' ');
+		inVals = split(inVal, ',');
 
-		std::map<int, string>::iterator itDad = projCtlCols.begin();
-		while(it != projCtlCols.end())
-		{
-			projDad << inVals[it->first] << " ";
-			cout << inVals[it->first] << " ";
-			it++;
+		//std::for_each(projCtlCols.begin(), projCtlCols.end(), EscreverMapa<map<int, string>::value_type>(std::cout));
+		//std::copy(inVals.begin(), inVals.end(), std::ostream_iterator<string>(std::cout, " "));
+		for(auto const& par : projCtlCols) {
+			projDad << inVals[par.first] << " ";
+			cout << inVals[par.first] << " ";
 		}
 		projDad << endl;
 		cout << endl;
@@ -171,16 +177,16 @@ void executarSelecao(string linha){
 	vector<string> parametros = separarParametros(linha);
 
 	string nomeTabela(parametros[0]),
-		   nomeCatalogo = nomeTabela + ".ctl",
-		   nomeDados = nomeTabela + ".dad",
+		   nomeCatalogo = nome_ctl(nomeTabela),
+		   nomeDados = nome_dad(nomeTabela),
 
 		   nomeAtr(parametros[1]),
 		   operador(parametros[2]),
 		   valor(parametros[3]),
 
 		   nomeFinal(parametros[4]),
-		   selNomeCtl(nomeFinal + ".ctl"),
-		   selNomeDad(nomeFinal + ".dad");
+		   selNomeCtl(nome_ctl(nomeFinal)),
+		   selNomeDad(nome_dad(nomeFinal));
 
 	fstream inCtl,
 			inDad,
@@ -189,7 +195,7 @@ void executarSelecao(string linha){
 
 	int inGrau,
 		inCard,
-		selCard,
+		selCard = 0,
 		selInd; //índice do atributo sendo selecionado
 
 	string inAtr,
@@ -201,7 +207,7 @@ void executarSelecao(string linha){
 
 	inCtl >> inAtr;
 
-	assert(2 == scanf(inAtr.c_str(), "%d,%d\n", &inGrau, &inCard) 
+	assert(2 == sscanf(inAtr.c_str(), "%d,%d", &inGrau, &inCard) 
 			&& "Erro na leitura da cardinalidade e grau.\n");
 
 	abrir(selCtl, selNomeCtl.c_str(), fstream::out, "ERRO: Falha na criação do arquivo: \n");
@@ -220,29 +226,36 @@ void executarSelecao(string linha){
 	}
 
 	// vetor com a i-ésima tupla da relação
+	inDad.imbue(locale(inDad.getloc(), new novalinha));
+	cout << "\nArquivo DAD da Seleção: \n";
+
 	vector<string> inVals;
 	for(int i = 0; i < inCard; i++){
 		inDad >> inVal;
-		inVals = split(inVal, ' ');
+		inVals = split(inVal, ',');
 
 		if(_satisfaz(inVals[selInd], selTipo, operador, valor)){
-			std::vector<string>::iterator itDad = inVals.begin();
-			while(itDad != inVals.end())
-			{
-				selDad << *itDad << " ";
-				cout << *itDad << " ";
-				itDad++;
+			for(auto const& valor : inVals){
+				selDad << valor << ",";
+				cout << valor << ",";
 			}
+
+			selCard++;
+			selDad << endl;
+			cout << endl;
 		}
-		selDad << endl;
-		cout << endl;
 	}
 
 	selCtl << inGrau << "," << selCard << endl;
 
 	//ctl da relação é igual à da seleção
+	inCtl.seekg(0);
+	inCtl >> inAtr;
+	cout << "\nArquivo CTL da Seleção:\n";
+
 	while(inCtl >> inAtr){
-		selCtl << inAtr;
+		selCtl << inAtr << endl;
+		cout << inAtr << endl;
 	}
 
 	inCtl.close();
@@ -279,14 +292,14 @@ void executarJuncao(string linha){
 		   cond(parametros[2]),
 		   nomef(parametros[3]),
 
-		   nomeCtlA = "ctl/" + nomeTabA + ".ctl",
-		   nomeDadA = "dad/" + nomeTabA + ".dad",
+		   nomeCtlA = nome_ctl(nomeTabA),
+		   nomeDadA = nome_dad(nomeTabA),
 
-		   nomeCtlB = "ctl/" + nomeTabB + ".ctl",
-		   nomeDadB = "dad/" + nomeTabB + ".dad",
+		   nomeCtlB = nome_ctl(nomeTabB),
+		   nomeDadB = nome_dad(nomeTabB),
 
-		   nomeCtlJun = "temp/" + nomef + ".ctl",
-		   nomeDadJun = "temp/" + nomef + ".dad";
+		   nomeCtlJun = nome_ctl(nomef),
+		   nomeDadJun = nome_dad(nomef);
 
 	string nomeAtrA = parseFirstAtrInTab(cond), 
 		   operador = parseOp(cond),
@@ -330,12 +343,12 @@ void executarJuncao(string linha){
 	//Leitura da Linha com grau e cardinalidade
 	inCtlA >> linhaCtlA;
 
-	assert(2 == scanf(linhaCtlA.c_str(), "%d,%d\n", &grauA, &cardA) 
+	assert(2 == sscanf(linhaCtlA.c_str(), "%d,%d", &grauA, &cardA) 
 			&& "Erro na leitura da cardinalidade e grau.\n");
 
 	inCtlB >> linhaCtlB;
 
-	assert(2 == scanf(linhaCtlB.c_str(), "%d,%d\n", &grauB, &cardB) 
+	assert(2 == sscanf(linhaCtlB.c_str(), "%d,%d", &grauB, &cardB) 
 			&& "Erro na leitura da cardinalidade e grau.\n");
 
 	//modificadores nas tabelas de ctl
@@ -350,7 +363,12 @@ void executarJuncao(string linha){
 			indA = i;
 			tipoAtr = mods[1];
 
-			// TODO: verificar se há ordenação
+			if(find(mods.begin(), mods.end(), "ord") != mods.end()){
+				// está ordenado
+			} else {
+				//ordenar
+			}
+
 			// achei o atributo que regerá a junção
 		}
 	}

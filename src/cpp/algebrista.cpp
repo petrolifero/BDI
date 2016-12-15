@@ -2,162 +2,15 @@
 #include <fstream>
 #include <map>
 #include <vector>
-#include <boost/range/algorithm_ext/erase.hpp>
-#include <boost/algorithm/string.hpp>
 #include <sstream>
 #include <iostream>
 #include <cassert>
+#include "util.cpp"
+#include "parserAlgebrico.cpp"
 
 using namespace std;
 using namespace boost;
 
-namespace alebra{
-
-/**
- *	Separação de Strings em vetores
- */
-
-void abrir(fstream &arquivo, const char* caminho, ios_base::openmode mode = fstream::in, 
-		string msg = "Erro abrindo o arquivo: "){
-
-	arquivo.open(caminho, mode);
-	if ( (arquivo.rdstate() & std::ifstream::failbit ) != 0 ){
-		std::cerr << msg << caminho << endl;
-		exit(1);
-	}
-}
-
-void split(const string &s, char delim, vector<string> &elems) {
-	if(s.empty()) return;
-
-    stringstream ss;
-    ss.str(s);
-    string item;
-    while (getline(ss, item, delim)) {
-        elems.push_back(item);
-    }
-}
-
-vector<string> split(const string &s, char delim) {
-    vector<string> elems;
-    split(s, delim, elems);
-    return elems;
-}
-
-string parseAtr(string where){
-	size_t found = where.find_first_of("=<>");	
-
-	return where.substr(0, found);
-}
-
-string parseVal(string where){
-	size_t found = where.find_last_of("=<>");	
-
-	return where.substr(found + 1, where.length());
-}
-
-/**
- *	PRE: primeiro atributo pertence à primeira tabela
- * */
-string parseFirstAtrInTab(string where){
-	size_t found = where.find_first_of(".");
-
-	return parseAtr((found != string::npos) ? where.substr(found) : where);
-}
-
-/**
- *	PRE: ultimo atributo pertence à 2ª tabela
- * */
-string parseLastAtrInTab(string where){
-	size_t found = where.find_last_of(".");
-
-	return (found != string::npos) ? where.substr(found) : parseVal(where);
-}
-
-string parseOp(string where){
-	size_t last = where.find_last_of("=<>"),
-		   first = where.find_first_of("=<>");
-
-	string t(1, where.at(last));
-
-	return ( first == last ) ?  t : where.substr(first, last - first);
-}
-
-
-/**
- *	Remoção de espaços consecutivos
- * */
-bool BothAreSpaces(char lhs, char rhs) { 
-	return ((lhs == rhs) && (lhs == ' ' || lhs == '\t')) 
-			|| (lhs == '\t' && rhs == ' ')
-			|| (lhs == ' ' && rhs == '\t'); 
-}
-
-void limpar(string &s){
-	if(s.empty()) return;
-
-	string::iterator novo_fim = unique(s.begin(), s.end(), BothAreSpaces);
-	s.erase(novo_fim, s.end());   
-}
-
-/**
- *	Separa strings delimitadas por vírgulas
- * */
-vector<string> separarParametros(string linha){
-	if(linha.empty()){
-		vector<string> vec;
-		return vec;
-	}
-
-	size_t inicio = 2;
-	size_t fim = linha.length() - 2;
-
-	string sublinha = linha.substr(inicio, fim);
-
-	return split(sublinha, ',');
-}
-
-/**
- *	TODO Proposta: caminho como entrada da função
- *
- *	@return nome da projeção gerada, ou "" caso a relação de entrada seja inválida
- * */
-string escreverProjecao(string relacao, int qtdAtributos, string listaAtributos, string nomeProjecao){
-	if(relacao.empty()) return "";
-
-	fstream arquivo;
-	abrir(arquivo, "etc/Operacao.alg", fstream::app);
-
-	arquivo << "P(" << relacao << "," << qtdAtributos << "," << listaAtributos << "," << nomeProjecao << ")\n";
-
-	arquivo.close();
-
-	return nomeProjecao;
-}
-
-/**
- *	TODO Proposta: caminho como entrada da função
- * */
-string escreverSelecao(string relacao, string atr, string op, string valor, string nomeSelecao){
-	fstream arquivo;
-	abrir(arquivo, "etc/Operacao.alg", fstream::app);
-	arquivo << "S(" << relacao << "," << atr << "," << op << "," << valor << ", " << nomeSelecao << ")\n";
-	arquivo.close();
-
-	return nomeSelecao;
-}
-
-/**
- *	TODO Proposta: caminho como entrada da função
- * */
-string escreverJuncao(string relacao, string relacaoB, string condicao, string nomeJuncao){
-	fstream arquivo;
-	abrir(arquivo, "etc/Operacao.alg", fstream::app);
-
-	arquivo << "J(" << relacao << "," << relacaoB << "," << condicao << "," << nomeJuncao << ")\n";
-
-	return nomeJuncao;
-}
 
 /**	
  *	Parser Álgebra Relacional
@@ -426,14 +279,14 @@ void executarJuncao(string linha){
 		   cond(parametros[2]),
 		   nomef(parametros[3]),
 
-		   nomeCtlA = nomeTabA + ".ctl",
-		   nomeDadA = nomeTabA + ".dad",
+		   nomeCtlA = "ctl/" + nomeTabA + ".ctl",
+		   nomeDadA = "dad/" + nomeTabA + ".dad",
 
-		   nomeCtlB = nomeTabB + ".ctl",
-		   nomeDadB = nomeTabB + ".dad",
+		   nomeCtlB = "ctl/" + nomeTabB + ".ctl",
+		   nomeDadB = "dad/" + nomeTabB + ".dad",
 
-		   nomeCtlJun = nomef + ".ctl",
-		   nomeDadJun = nomef + ".dad";
+		   nomeCtlJun = "temp/" + nomef + ".ctl",
+		   nomeDadJun = "temp/" + nomef + ".dad";
 
 	string nomeAtrA = parseFirstAtrInTab(cond), 
 		   operador = parseOp(cond),
@@ -576,7 +429,7 @@ void executarJuncao(string linha){
 
 void parse(){
 	fstream arquivo;
-	abrir(arquivo, "etc/Operacao.alg");
+	abrir(arquivo, "temp/Operacao.alg");
 	string linha;
 	
 	while(arquivo >> linha){
@@ -596,6 +449,4 @@ void parse(){
 	}
 
 	arquivo.close();
-}
-
 }

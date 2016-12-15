@@ -94,3 +94,6 @@ struct novalinha : std::ctype<char> {
   }
 };
 
+bool comparar (pair<string, string> i, pair<string, string> j) { 
+	return (i.first < j.first); 
+}

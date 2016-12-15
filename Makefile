@@ -6,6 +6,7 @@ CSRCS=$(wildcard src/*.c)
 CPPSRCS=$(wildcard src/cpp/*.cpp)
 
 select: $(CPPSRCS)
+	rm -f bin/* bin/.fuse* ctl/*_* dad/*_* temp/*
 	@mkdir -p bin
 	$(CPP) $(CPPFLAGS) $< -o bin/$@
 	#./bin/select etc/select1
@@ -18,5 +19,6 @@ select: $(CPPSRCS)
 
 all: select
 
+.PHONY: clean
 clean:
 	rm -f bin/* bin/.fuse* ctl/*_* dad/*_* temp/*

@@ -12,11 +12,10 @@ using namespace std;
 using namespace boost;
 
 
-/**	
- *	Parser Álgebra Relacional
+/*
+ *	Execução das operações aritméticas
  *
  * */
-
 void executarProjecao(string linha){
 
 	// Parâmetros da operação algébrica de projeção
@@ -134,9 +133,9 @@ void executarProjecao(string linha){
 bool _satisfaz(string valAtr, string tipoAtr, string operador, string val){
 	if(tipoAtr == "I"){
 		int valorAtr, valor, rc;
-		rc = scanf(valAtr.c_str(), "%d", &valorAtr);
+		rc = sscanf(valAtr.c_str(), "%d", &valorAtr);
 		assert(rc == 1 && "erro na leitura do valor na relação.\n");
-		rc = scanf(val.c_str(), "%d", &valor);
+		rc = sscanf(val.c_str(), "%d", &valor);
 		assert(rc == 1 && "erro na leitura do valor de seleção.\n");
 
 		if(operador == "="){
@@ -265,7 +264,8 @@ void executarSelecao(string linha){
 }
 
 /*
- *	TODO Verificar se atributos da condição tem o mesmo nome, e renomeá-los caso isto aconteça;
+ *	TODO ajustar construção do CTL
+ *		 ajustar construção do DAD
  * */
 void executarJuncao(string linha){
 
@@ -321,6 +321,9 @@ void executarJuncao(string linha){
 		indA,
 		indB;
 
+	bool ordenarA = false,
+		 ordenarB = false;
+
 	abrir(inCtlA, nomeCtlA.c_str(), fstream::in, 
 			"Falha na abertura do 1º Arquivo de Catálogo: \n");
 	abrir(inDadA, nomeDadA.c_str(), fstream::in, 
@@ -358,15 +361,13 @@ void executarJuncao(string linha){
 		inCtlA >> linhaCtlA;
 
 		mods = split(linhaCtlA, ',');
-
+		
 		if(mods[0] == nomeAtrA){
 			indA = i;
 			tipoAtr = mods[1];
 
-			if(find(mods.begin(), mods.end(), "ord") != mods.end()){
-				// está ordenado
-			} else {
-				//ordenar
+			if(find(mods.begin(), mods.end(), "ord") == mods.end()){
+				ordenarA = true;
 			}
 
 			// achei o atributo que regerá a junção
@@ -380,60 +381,80 @@ void executarJuncao(string linha){
 
 		if(mods[0] == nomeAtrB){
 			indB = i;
+			tipoAtr = mods[1];
 
-			// TODO: verificar se há ordenação
+			if(find(mods.begin(), mods.end(), "ord") == mods.end()){
+				ordenarB = true;
+			}
+
 			// achei o atributo que regerá a junção
 		}
 	}
 
-	// TODO: ordenar tabelas não ordenadas
-	
-	// TODO: trabalhar em iteradores, e não em linhas
-
-	vector<string> linhasA, linhasB;
+	map<string, string> linhasA, linhasB;
 	string linhaA, linhaB;
+	vector<string> inVals;
+
+	inDadA.imbue(locale(inDadA.getloc(), new novalinha));
+	inDadB.imbue(locale(inDadB.getloc(), new novalinha));
 
 	for(int i = 0; i < cardA; i++){
 		inDadA >> linhaA;
-		linhasA.push_back(linhaA);
+		inVals = split(linhaA, ',');
+		linhasA.insert(make_pair(inVals[indA], linhaA));
 	}
 
 	for(int i = 0; i < cardB; i++){
 		inDadB >> linhaB;
-		linhasB.push_back(linhaB);
+		inVals = split(linhaB, ',');
+		linhasB.insert(make_pair(inVals[indB], linhaB));
 	}
+	
+	map<string, string>::iterator itArqA(linhasA.begin()),
+								  itArqB(linhasB.begin());
 
-	vector<string>::iterator itArqA = linhasA.begin(),
-							 itArqB = linhasB.begin();
-
-	vector<string> valoresA, 
-				   valoresB;
+	cout << "\nArquivo DAD da junção:\n";
 
 	while(itArqA != linhasA.end() 
 			&& itArqB != linhasB.end()){
 
-		valoresA = split(*itArqA, ' ');
-		valoresB = split(*itArqB, ' ');
-
-		if(_satisfaz(valoresA[indA], tipoAtr, operador, valoresB[indB])){
-			junDad << *itArqA << " " << *itArqB;
+		if(_satisfaz(itArqA->first, tipoAtr, operador, itArqB->first)){
+			junDad << itArqA->second << "," << itArqB->second << endl;
+			cout << itArqA->second << "," << itArqB->second << endl;
 			cardJ++;
+		}
+
+		if(itArqA->first > itArqB->first){
+			itArqB++;
+		} else if(itArqB->first > itArqA->first){
+			itArqA++;
+		} else {
+			itArqA++;
+			itArqB++;
 		}
 	}
 
 	grauJ = grauA + grauB;
+	cout << "\nArquivo CTL da junção:\n";
 
 	junCtl << grauJ << "," << cardJ << endl;
+	cout << grauJ << "," << cardJ << endl;
 
-	// TODO: zerar arquivos;
+	inCtlA.seekg(0);
+	inCtlA >> linhaA;
+
+	inCtlB.seekg(0);
+	inCtlB >> linhaB;
 	
-	for(int i = 0; i < cardJ; i++){
-		if(i < cardA){
-			inDadA >> linhaA;
-			junCtl << linhaA;
+	for(int i = 0; i < grauJ; i++){
+		if(i < grauA){
+			inCtlA >> linhaA;
+			cout << linhaA << endl;
+			junCtl << linhaA << endl;
 		} else {
-			inDadB >> linhaB;
-			junCtl << linhaB;
+			inCtlB >> linhaB;
+			cout << linhaB << endl;
+			junCtl << linhaB << endl;
 		}
 	}
 
